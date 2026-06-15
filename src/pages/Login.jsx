@@ -1,0 +1,193 @@
+import { useState } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
+
+export default function Login() {
+  const navigate = useNavigate()
+  const [tab, setTab] = useState('login') // 'login' | 'signup'
+  const [form, setForm] = useState({ email: '', password: '', name: '' })
+  const [loading, setLoading] = useState(false)
+
+  const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value })
+
+  const handleSubmit = (e) => {
+    e.preventDefault()
+    setLoading(true)
+    // Simulate async auth — Week 2 will wire real API
+    setTimeout(() => {
+      setLoading(false)
+      navigate('/')
+    }, 1200)
+  }
+
+  return (
+    <div className="min-h-screen bg-brand-dark flex items-center justify-center px-4 relative overflow-hidden">
+      {/* Background glow blobs */}
+      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-brand-red/10 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute bottom-1/4 left-1/4 w-64 h-64 bg-purple-600/10 rounded-full blur-3xl pointer-events-none" />
+
+      <div className="relative z-10 w-full max-w-md">
+        {/* Logo */}
+        <div className="text-center mb-8">
+          <Link to="/" className="inline-flex items-center gap-2 group">
+            <div className="w-10 h-10 rounded-xl bg-brand-red flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+              <svg width="22" height="22" viewBox="0 0 18 18" fill="none">
+                <path d="M3 3l4 4-4 4V3zm5 0h7v2h-7V3zm0 4h5v2h-5V7zm0 4h7v2h-7v-2z" fill="white" />
+              </svg>
+            </div>
+            <span className="text-2xl font-black">
+              <span className="text-white">Cine</span>
+              <span className="text-brand-red">Flow</span>
+            </span>
+          </Link>
+          <p className="text-gray-500 text-sm mt-2">Your cinema, everywhere.</p>
+        </div>
+
+        {/* Card */}
+        <div className="glass rounded-2xl border border-brand-border shadow-2xl overflow-hidden">
+          {/* Tab switcher */}
+          <div className="flex">
+            {['login', 'signup'].map((t) => (
+              <button
+                key={t}
+                id={`auth-tab-${t}`}
+                onClick={() => setTab(t)}
+                className={`flex-1 py-4 text-sm font-semibold transition-all duration-200 ${
+                  tab === t
+                    ? 'bg-brand-red/10 text-white border-b-2 border-brand-red'
+                    : 'text-gray-500 hover:text-gray-300 border-b border-brand-border'
+                }`}
+              >
+                {t === 'login' ? 'Sign In' : 'Create Account'}
+              </button>
+            ))}
+          </div>
+
+          <form onSubmit={handleSubmit} className="p-6 sm:p-8 space-y-5">
+            {tab === 'signup' && (
+              <div>
+                <label htmlFor="login-name" className="block text-sm font-medium text-gray-400 mb-1.5">
+                  Full Name
+                </label>
+                <input
+                  id="login-name"
+                  type="text"
+                  name="name"
+                  value={form.name}
+                  onChange={handleChange}
+                  placeholder="John Doe"
+                  required={tab === 'signup'}
+                  className="w-full bg-white/5 border border-brand-border rounded-xl px-4 py-3 text-white placeholder-gray-600 outline-none focus:border-brand-red/60 focus:bg-white/8 transition-all duration-200"
+                />
+              </div>
+            )}
+
+            <div>
+              <label htmlFor="login-email" className="block text-sm font-medium text-gray-400 mb-1.5">
+                Email Address
+              </label>
+              <input
+                id="login-email"
+                type="email"
+                name="email"
+                value={form.email}
+                onChange={handleChange}
+                placeholder="you@example.com"
+                required
+                className="w-full bg-white/5 border border-brand-border rounded-xl px-4 py-3 text-white placeholder-gray-600 outline-none focus:border-brand-red/60 focus:bg-white/8 transition-all duration-200"
+              />
+            </div>
+
+            <div>
+              <div className="flex items-center justify-between mb-1.5">
+                <label htmlFor="login-password" className="block text-sm font-medium text-gray-400">
+                  Password
+                </label>
+                {tab === 'login' && (
+                  <button
+                    type="button"
+                    className="text-xs text-brand-red hover:text-red-400 transition-colors"
+                  >
+                    Forgot password?
+                  </button>
+                )}
+              </div>
+              <input
+                id="login-password"
+                type="password"
+                name="password"
+                value={form.password}
+                onChange={handleChange}
+                placeholder="••••••••"
+                required
+                className="w-full bg-white/5 border border-brand-border rounded-xl px-4 py-3 text-white placeholder-gray-600 outline-none focus:border-brand-red/60 transition-all duration-200"
+              />
+            </div>
+
+            <button
+              id="auth-submit-btn"
+              type="submit"
+              disabled={loading}
+              className="w-full btn-primary justify-center py-3.5 text-base rounded-xl"
+            >
+              {loading ? (
+                <span className="flex items-center gap-2">
+                  <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                  </svg>
+                  {tab === 'login' ? 'Signing in...' : 'Creating account...'}
+                </span>
+              ) : (
+                tab === 'login' ? 'Sign In' : 'Create Account'
+              )}
+            </button>
+
+            {/* Divider */}
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-brand-border" />
+              </div>
+              <div className="relative flex justify-center text-xs">
+                <span className="px-3 bg-transparent text-gray-500">or continue with</span>
+              </div>
+            </div>
+
+            {/* Social Buttons */}
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                type="button"
+                id="auth-google-btn"
+                className="btn-secondary justify-center py-2.5 text-sm rounded-xl"
+              >
+                <svg className="w-4 h-4" viewBox="0 0 24 24">
+                  <path fill="#EA4335" d="M5.26620003,9.76452941 C6.19878754,6.93863203 8.85444915,4.90909091 12,4.90909091 C13.6909091,4.90909091 15.2181818,5.50909091 16.4181818,6.49090909 L19.9090909,3 C17.7818182,1.14545455 15.0545455,0 12,0 C7.27006974,0 3.1977497,2.69829785 1.23999023,6.65002441 L5.26620003,9.76452941 Z"/>
+                  <path fill="#34A853" d="M16.0407269,18.0125889 C14.9509167,18.7163016 13.5660892,19.0909091 12,19.0909091 C8.86648613,19.0909091 6.21911939,17.076871 5.27698177,14.2678769 L1.23746264,17.3349879 C3.19279051,21.2936293 7.26500293,24 12,24 C14.9328362,24 17.7353462,22.9573905 19.834192,20.9995801 L16.0407269,18.0125889 Z"/>
+                  <path fill="#4A90E2" d="M19.834192,20.9995801 C22.0291676,18.9520994 23.4545455,15.903663 23.4545455,12 C23.4545455,11.2909091 23.3454545,10.5272727 23.1818182,9.81818182 L12,9.81818182 L12,14.4545455 L18.4363636,14.4545455 C18.1187732,16.013626 17.2662994,17.2212117 16.0407269,18.0125889 L19.834192,20.9995801 Z"/>
+                  <path fill="#FBBC05" d="M5.27698177,14.2678769 C5.03832634,13.556323 4.90909091,12.7937589 4.90909091,12 C4.90909091,11.2182781 5.03443647,10.4668121 5.26620003,9.76452941 L1.23999023,6.65002441 C0.43658717,8.26043162 0,10.0753848 0,12 C0,13.9159572 0.435448291,15.7350961 1.23746264,17.3349879 L5.27698177,14.2678769 Z"/>
+                </svg>
+                Google
+              </button>
+              <button
+                type="button"
+                id="auth-github-btn"
+                className="btn-secondary justify-center py-2.5 text-sm rounded-xl"
+              >
+                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M12 0C5.374 0 0 5.373 0 12c0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0112 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.627-5.373-12-12-12z"/>
+                </svg>
+                GitHub
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <p className="text-center text-gray-600 text-xs mt-6">
+          By continuing, you agree to CineFlow's{' '}
+          <span className="text-gray-400 hover:text-white cursor-pointer transition-colors">Terms of Service</span>{' '}
+          and{' '}
+          <span className="text-gray-400 hover:text-white cursor-pointer transition-colors">Privacy Policy</span>.
+        </p>
+      </div>
+    </div>
+  )
+}
