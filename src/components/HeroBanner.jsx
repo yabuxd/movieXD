@@ -15,7 +15,7 @@ export default function HeroBanner({ movie }) {
       {/* Background Image */}
       {!imgError ? (
         <img
-          src={movie.backdrop_path}
+          src={movie.backdrop_path ? (movie.backdrop_path.startsWith('http') ? movie.backdrop_path : `https://image.tmdb.org/t/p/original${movie.backdrop_path}`) : ''}
           alt={movie.title}
           onError={() => setImgError(true)}
           className="absolute inset-0 w-full h-full object-cover object-top"

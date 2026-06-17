@@ -53,7 +53,7 @@ export default function Watchlist() {
                   <div className="sm:w-48 aspect-[16/9] sm:aspect-auto flex-shrink-0 relative">
                     {watchlist[0].poster_path ? (
                       <img
-                        src={watchlist[0].poster_path}
+                        src={watchlist[0].poster_path.startsWith('http') ? watchlist[0].poster_path : `https://image.tmdb.org/t/p/w500${watchlist[0].poster_path}`}
                         alt={watchlist[0].title}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                       />

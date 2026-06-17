@@ -27,7 +27,7 @@ export default function Navbar() {
 
   const navLinks = [
     { to: '/', label: 'Home' },
-    { to: '/search', label: 'Browse' },
+    { to: '/discover', label: 'Discover' },
     { to: '/watchlist', label: 'My List' },
   ]
 
@@ -54,8 +54,8 @@ export default function Navbar() {
                 </svg>
               </div>
               <span className="text-xl font-black tracking-tight">
-                <span className="text-white">Cine</span>
-                <span className="text-brand-red">Flow</span>
+                <span className="text-white">Movie</span>
+                <span className="text-brand-red">XD</span>
               </span>
             </Link>
 

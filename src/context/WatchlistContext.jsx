@@ -1,10 +1,16 @@
-import { createContext, useContext, useState, useCallback } from 'react'
-import { MOCK_WATCHLIST } from '../data/mockData'
+import { createContext, useContext, useState, useCallback, useEffect } from 'react'
 
 const WatchlistContext = createContext(null)
 
 export function WatchlistProvider({ children }) {
-  const [watchlist, setWatchlist] = useState(MOCK_WATCHLIST)
+  const [watchlist, setWatchlist] = useState(() => {
+    const saved = localStorage.getItem('watchlist')
+    return saved ? JSON.parse(saved) : []
+  })
+
+  useEffect(() => {
+    localStorage.setItem('watchlist', JSON.stringify(watchlist))
+  }, [watchlist])
 
   const isInWatchlist = useCallback(
     (id) => watchlist.some((m) => m.id === id),

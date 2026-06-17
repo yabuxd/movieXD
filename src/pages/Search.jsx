@@ -1,24 +1,8 @@
-import { useState, useMemo } from 'react'
-import { useSearchParams, Link } from 'react-router-dom'
+import { useState, useEffect, useMemo } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import MovieCard from '../components/MovieCard'
-import {
-  MOCK_TRENDING,
-  MOCK_POPULAR,
-  MOCK_TOP_RATED,
-  MOCK_UPCOMING,
-  GENRE_MAP,
-} from '../data/mockData'
-
-const ALL_MOVIES = [
-  ...MOCK_TRENDING,
-  ...MOCK_POPULAR,
-  ...MOCK_TOP_RATED,
-  ...MOCK_UPCOMING,
-].filter((m, i, arr) => arr.findIndex((x) => x.id === m.id) === i)
-
-const GENRES = [...new Set(ALL_MOVIES.flatMap((m) => m.genre_ids || []))]
-  .map((id) => ({ id, name: GENRE_MAP[id] || 'Other' }))
-  .sort((a, b) => a.name.localeCompare(b.name))
+import SkeletonCard from '../components/SkeletonCard'
+import { searchMovies, getPopular, getGenres, discoverMovies } from '../services/tmdb'
 
 const SORT_OPTIONS = [
   { value: 'default', label: 'Default' },
@@ -33,51 +17,117 @@ export default function Search() {
   const [searchParams, setSearchParams] = useSearchParams()
   const query = searchParams.get('q') || ''
   const [localQ, setLocalQ] = useState(query)
-  const [selectedGenre, setSelectedGenre] = useState(null)
+  const [debouncedQ, setDebouncedQ] = useState(query)
   const [sortBy, setSortBy] = useState('default')
+  const [movies, setMovies] = useState([])
+  const [isLoading, setIsLoading] = useState(true)
+
+  // Debouncing effect
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedQ(localQ)
+      if (localQ.trim()) {
+        setSearchParams({ q: localQ.trim() })
+      } else {
+        setSearchParams({})
+      }
+    }, 500)
+
+    return () => {
+      clearTimeout(handler)
+    }
+  }, [localQ, setSearchParams])
+
+  const [genres, setGenres] = useState([])
+
+  // Fetch Genres for parsing
+  useEffect(() => {
+    const fetchG = async () => {
+      try {
+        const data = await getGenres()
+        setGenres(data.genres || [])
+      } catch(e) {}
+    }
+    fetchG()
+  }, [])
+
+  // Fetch effect
+  useEffect(() => {
+    const fetchResults = async () => {
+      setIsLoading(true)
+      try {
+        const q = debouncedQ.trim().toLowerCase()
+        if (q) {
+          // Natural Language parsing
+          const genreMatch = genres.find(g => q.includes(g.name.toLowerCase()))
+          const yearMatch = q.match(/\b(19|20)\d{2}\b/)
+          const isSmartQuery = genreMatch || yearMatch
+
+          if (isSmartQuery) {
+            // Use Discover API for smart queries
+            const params = {
+              sort_by: 'popularity.desc'
+            }
+            if (genreMatch) params.with_genres = genreMatch.id
+            if (yearMatch) params.primary_release_year = yearMatch[0]
+            
+            const data = await discoverMovies(params)
+            setMovies(data.results || [])
+          } else {
+            // Use Search API for normal title queries
+            const data = await searchMovies(debouncedQ)
+            setMovies(data.results || [])
+          }
+        } else {
+          const data = await getPopular()
+          setMovies(data.results || [])
+        }
+      } catch (err) {
+        console.error('Search failed:', err)
+        setMovies([])
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    if (genres.length > 0 || !debouncedQ.trim()) {
+      fetchResults()
+    }
+  }, [debouncedQ, genres])
 
   const results = useMemo(() => {
-    let list = ALL_MOVIES
-
-    if (query) {
-      list = list.filter((m) =>
-        m.title.toLowerCase().includes(query.toLowerCase())
-      )
-    }
-
-    if (selectedGenre) {
-      list = list.filter((m) => (m.genre_ids || []).includes(selectedGenre))
-    }
+    let list = [...movies]
 
     switch (sortBy) {
       case 'rating-desc':
-        list = [...list].sort((a, b) => b.vote_average - a.vote_average)
+        list.sort((a, b) => b.vote_average - a.vote_average)
         break
       case 'rating-asc':
-        list = [...list].sort((a, b) => a.vote_average - b.vote_average)
+        list.sort((a, b) => a.vote_average - b.vote_average)
         break
       case 'year-desc':
-        list = [...list].sort(
-          (a, b) => new Date(b.release_date) - new Date(a.release_date)
+        list.sort(
+          (a, b) => new Date(b.release_date || 0) - new Date(a.release_date || 0)
         )
         break
       case 'year-asc':
-        list = [...list].sort(
-          (a, b) => new Date(a.release_date) - new Date(b.release_date)
+        list.sort(
+          (a, b) => new Date(a.release_date || 0) - new Date(b.release_date || 0)
         )
         break
       case 'title-asc':
-        list = [...list].sort((a, b) => a.title.localeCompare(b.title))
+        list.sort((a, b) => (a.title || '').localeCompare(b.title || ''))
         break
       default:
         break
     }
 
     return list
-  }, [query, selectedGenre, sortBy])
+  }, [movies, sortBy])
 
   const handleSearch = (e) => {
     e.preventDefault()
+    setDebouncedQ(localQ)
     if (localQ.trim()) {
       setSearchParams({ q: localQ.trim() })
     } else {
@@ -89,13 +139,13 @@ export default function Search() {
     <div className="min-h-screen bg-brand-dark pt-24 pb-16 px-4 sm:px-6 lg:px-8 max-w-screen-xl mx-auto">
       {/* Page Title */}
       <h1 className="text-3xl font-bold text-white mb-8">
-        {query ? (
+        {debouncedQ ? (
           <>
             Results for{' '}
-            <span className="text-gradient-red">"{query}"</span>
+            <span className="text-gradient-red">"{debouncedQ}"</span>
           </>
         ) : (
-          'Browse All Movies'
+          'Browse Popular Movies'
         )}
       </h1>
 
@@ -137,35 +187,7 @@ export default function Search() {
       </form>
 
       {/* Filters */}
-      <div className="flex flex-wrap gap-3 mb-8 items-center">
-        {/* Genre Filter */}
-        <div className="flex flex-wrap gap-2">
-          <button
-            onClick={() => setSelectedGenre(null)}
-            className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 ${
-              !selectedGenre
-                ? 'bg-brand-red text-white'
-                : 'glass border border-brand-border text-gray-400 hover:text-white hover:border-white/30'
-            }`}
-          >
-            All
-          </button>
-          {GENRES.slice(0, 10).map((g) => (
-            <button
-              key={g.id}
-              id={`genre-filter-${g.id}`}
-              onClick={() => setSelectedGenre(selectedGenre === g.id ? null : g.id)}
-              className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 ${
-                selectedGenre === g.id
-                  ? 'bg-brand-red text-white'
-                  : 'glass border border-brand-border text-gray-400 hover:text-white hover:border-white/30'
-              }`}
-            >
-              {g.name}
-            </button>
-          ))}
-        </div>
-
+      <div className="flex flex-wrap gap-3 mb-8 items-center justify-end">
         {/* Sort */}
         <div className="ml-auto">
           <select
@@ -184,12 +206,20 @@ export default function Search() {
       </div>
 
       {/* Results count */}
-      <p className="text-gray-500 text-sm mb-6">
-        {results.length} {results.length === 1 ? 'movie' : 'movies'} found
-      </p>
+      {!isLoading && (
+        <p className="text-gray-500 text-sm mb-6">
+          {results.length} {results.length === 1 ? 'movie' : 'movies'} found
+        </p>
+      )}
 
       {/* Grid */}
-      {results.length > 0 ? (
+      {isLoading ? (
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-5">
+          {Array.from({ length: 12 }).map((_, i) => (
+            <SkeletonCard key={i} />
+          ))}
+        </div>
+      ) : results.length > 0 ? (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-5">
           {results.map((movie) => (
             <MovieCard key={movie.id} movie={movie} />
@@ -201,7 +231,7 @@ export default function Search() {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
           </svg>
           <p className="text-gray-400 text-xl font-semibold mb-2">No movies found</p>
-          <p className="text-gray-600 text-sm">Try a different search term or remove filters.</p>
+          <p className="text-gray-600 text-sm">Try a different search term.</p>
         </div>
       )}
     </div>

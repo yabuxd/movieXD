@@ -182,7 +182,7 @@ export default function Login() {
         </div>
 
         <p className="text-center text-gray-600 text-xs mt-6">
-          By continuing, you agree to CineFlow's{' '}
+          By continuing, you agree to MovieXD's{' '}
           <span className="text-gray-400 hover:text-white cursor-pointer transition-colors">Terms of Service</span>{' '}
           and{' '}
           <span className="text-gray-400 hover:text-white cursor-pointer transition-colors">Privacy Policy</span>.

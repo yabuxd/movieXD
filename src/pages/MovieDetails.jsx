@@ -1,35 +1,50 @@
 import { useParams, Link } from 'react-router-dom'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useWatchlist } from '../context/WatchlistContext'
-import {
-  MOCK_TRENDING,
-  MOCK_POPULAR,
-  MOCK_TOP_RATED,
-  MOCK_UPCOMING,
-  MOCK_HERO,
-  GENRE_MAP,
-} from '../data/mockData'
-
-const ALL_MOVIES = [
-  MOCK_HERO,
-  ...MOCK_TRENDING,
-  ...MOCK_POPULAR,
-  ...MOCK_TOP_RATED,
-  ...MOCK_UPCOMING,
-].filter((m, i, arr) => arr.findIndex((x) => x.id === m.id) === i)
+import { getMovieDetails } from '../services/tmdb'
+import LoadingSpinner from '../components/LoadingSpinner'
 
 export default function MovieDetails() {
   const { id } = useParams()
-  const movie = ALL_MOVIES.find((m) => m.id === Number(id))
   const { isInWatchlist, toggleWatchlist } = useWatchlist()
+  const [movie, setMovie] = useState(null)
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState(null)
   const [imgError, setImgError] = useState(false)
 
-  if (!movie) {
+  useEffect(() => {
+    const fetchDetail = async () => {
+      setIsLoading(true)
+      setError(null)
+      try {
+        const data = await getMovieDetails(id)
+        setMovie(data)
+      } catch (err) {
+        console.error('Failed to load movie details:', err)
+        setError('Failed to load movie details. Please try again.')
+      } finally {
+        setIsLoading(false)
+      }
+    }
+    
+    fetchDetail()
+    // Reset window scroll on mount/id change
+    window.scrollTo(0, 0)
+  }, [id])
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-brand-dark flex flex-col items-center justify-center">
+        <LoadingSpinner />
+      </div>
+    )
+  }
+
+  if (error || !movie) {
     return (
       <div className="min-h-screen bg-brand-dark flex flex-col items-center justify-center text-center px-4">
-        <p className="text-gray-500 text-6xl mb-4">404</p>
-        <h1 className="text-white text-2xl font-bold mb-4">Movie not found</h1>
-        <p className="text-gray-500 mb-8">We couldn't find a movie with that ID in our mock data.</p>
+        <p className="text-gray-500 text-6xl mb-4">Oops</p>
+        <h1 className="text-white text-2xl font-bold mb-4">{error || 'Movie not found'}</h1>
         <Link to="/" className="btn-primary">Go Home</Link>
       </div>
     )
@@ -38,25 +53,25 @@ export default function MovieDetails() {
   const inWatchlist = isInWatchlist(movie.id)
   const year = movie.release_date ? new Date(movie.release_date).getFullYear() : 'TBA'
   const rating = movie.vote_average > 0 ? movie.vote_average.toFixed(1) : 'N/A'
-  const genres = movie.genres
-    || (movie.genre_ids || []).map((id) => GENRE_MAP[id]).filter(Boolean)
+  const genres = (movie.genres || []).map(g => g.name)
 
-  // Related movies (same genre, excluding current)
-  const related = ALL_MOVIES.filter(
-    (m) =>
-      m.id !== movie.id &&
-      (m.genre_ids || []).some((g) => (movie.genre_ids || []).includes(g))
-  ).slice(0, 6)
-
-  const posterSrc = movie.poster_path || movie.backdrop_path
+  const related = (movie.similar?.results || []).slice(0, 6)
+  
+  const backdropSrc = movie.backdrop_path 
+    ? `https://image.tmdb.org/t/p/original${movie.backdrop_path}` 
+    : null
+    
+  const posterSrc = movie.poster_path 
+    ? `https://image.tmdb.org/t/p/w500${movie.poster_path}` 
+    : backdropSrc
 
   return (
     <div className="min-h-screen bg-brand-dark">
       {/* Backdrop */}
       <div className="relative h-[50vh] md:h-[60vh] overflow-hidden">
-        {movie.backdrop_path && !imgError ? (
+        {backdropSrc && !imgError ? (
           <img
-            src={movie.backdrop_path}
+            src={backdropSrc}
             alt={movie.title}
             onError={() => setImgError(true)}
             className="w-full h-full object-cover object-top"
@@ -126,7 +141,7 @@ export default function MovieDetails() {
                 <span className="text-gray-500 text-sm">/10</span>
               </div>
               <span className="text-gray-400">{year}</span>
-              {movie.runtime && (
+              {movie.runtime > 0 && (
                 <span className="text-gray-400">{movie.runtime} min</span>
               )}
               <span className="badge-gold">4K</span>
@@ -193,7 +208,7 @@ export default function MovieDetails() {
             { label: 'Rating', value: `${rating} / 10`, icon: '⭐' },
             { label: 'Year', value: year, icon: '📅' },
             { label: 'Runtime', value: movie.runtime ? `${movie.runtime} min` : 'N/A', icon: '⏱️' },
-            { label: 'Status', value: movie.vote_average > 0 ? 'Released' : 'Coming Soon', icon: '🎬' },
+            { label: 'Status', value: movie.status || 'Released', icon: '🎬' },
           ].map(({ label, value, icon }) => (
             <div key={label} className="glass rounded-xl p-4 border border-brand-border text-center">
               <div className="text-2xl mb-1">{icon}</div>
@@ -203,22 +218,54 @@ export default function MovieDetails() {
           ))}
         </div>
 
-        {/* Related Movies */}
+        {/* Related Movies (Similar) */}
         {related.length > 0 && (
           <div className="mt-16">
-            <h2 className="text-2xl font-bold text-white mb-6">You Might Also Like</h2>
+            <h2 className="text-2xl font-bold text-white mb-6">Similar Movies</h2>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
               {related.map((m) => (
                 <Link
                   key={m.id}
                   to={`/movie/${m.id}`}
-                  id={`related-movie-${m.id}`}
+                  id={`similar-movie-${m.id}`}
                   className="group block"
                 >
                   <div className="rounded-xl overflow-hidden bg-brand-card aspect-[2/3] shadow-lg mb-2 group-hover:ring-2 group-hover:ring-brand-red/60 transition-all duration-200">
                     {m.poster_path ? (
                       <img
-                        src={m.poster_path}
+                        src={`https://image.tmdb.org/t/p/w500${m.poster_path}`}
+                        alt={m.title}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center bg-brand-card">
+                        <span className="text-gray-600 text-xs text-center px-2">{m.title}</span>
+                      </div>
+                    )}
+                  </div>
+                  <p className="text-white text-xs font-medium truncate group-hover:text-brand-red transition-colors">{m.title}</p>
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Recommendations */}
+        {movie.recommendations?.results?.length > 0 && (
+          <div className="mt-12">
+            <h2 className="text-2xl font-bold text-white mb-6">Recommendations</h2>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+              {movie.recommendations.results.slice(0, 6).map((m) => (
+                <Link
+                  key={m.id}
+                  to={`/movie/${m.id}`}
+                  id={`recommended-movie-${m.id}`}
+                  className="group block"
+                >
+                  <div className="rounded-xl overflow-hidden bg-brand-card aspect-[2/3] shadow-lg mb-2 group-hover:ring-2 group-hover:ring-brand-red/60 transition-all duration-200">
+                    {m.poster_path ? (
+                      <img
+                        src={`https://image.tmdb.org/t/p/w500${m.poster_path}`}
                         alt={m.title}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                       />
