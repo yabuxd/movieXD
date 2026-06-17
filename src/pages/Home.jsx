@@ -35,7 +35,11 @@ export default function Home() {
         }
       } catch (err) {
         console.error('Failed to load movies:', err)
-        setError('Failed to load movies. Please try again.')
+        const apiMessage = err.response?.data?.status_message
+        setError(
+          apiMessage ||
+            'Failed to load movies. If this is the hosted site, add TMDB_API_KEY in Netlify environment variables and redeploy.'
+        )
       } finally {
         setIsLoading(false)
       }
