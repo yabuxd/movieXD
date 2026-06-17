@@ -124,15 +124,15 @@ export default function GenreDropdown({ variant = 'desktop', onNavigate }) {
         aria-haspopup="menu"
         className={`flex items-center gap-1.5 font-medium transition-all duration-200 ${
           isMobile
-            ? `w-full px-4 py-3 rounded-lg text-sm ${
+            ? `w-full px-4 py-3 rounded-xl text-sm ${
                 open || isOnGenrePage
-                  ? 'text-white bg-white/10 border-l-2 border-brand-red'
-                  : 'text-gray-400 hover:text-white hover:bg-white/5'
+                  ? 'text-brand-cyan bg-brand-surface/80 border-l-2 border-brand-cyan'
+                  : 'text-brand-muted hover:text-brand-text hover:bg-brand-surface/40'
               }`
-            : `px-4 py-2 rounded-lg text-sm ${
+            : `px-4 py-2 rounded-xl text-sm ${
                 open || isOnGenrePage
-                  ? 'text-white bg-white/10'
-                  : 'text-gray-400 hover:text-white hover:bg-white/5'
+                  ? 'nav-pill-active text-brand-cyan'
+                  : 'text-brand-muted hover:text-brand-text hover:bg-brand-surface/50'
               }`
         }`}
       >

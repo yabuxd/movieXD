@@ -34,7 +34,7 @@ export default function MovieDetails() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-brand-dark flex flex-col items-center justify-center">
+      <div className="min-h-screen bg-brand-bg flex flex-col items-center justify-center">
         <LoadingSpinner />
       </div>
     )
@@ -42,7 +42,7 @@ export default function MovieDetails() {
 
   if (error || !movie) {
     return (
-      <div className="min-h-screen bg-brand-dark flex flex-col items-center justify-center text-center px-4">
+      <div className="min-h-screen bg-brand-bg flex flex-col items-center justify-center text-center px-4">
         <p className="text-gray-500 text-6xl mb-4">Oops</p>
         <h1 className="text-white text-2xl font-bold mb-4">{error || 'Movie not found'}</h1>
         <Link to="/" className="btn-primary">Go Home</Link>
@@ -66,7 +66,7 @@ export default function MovieDetails() {
     : backdropSrc
 
   return (
-    <div className="min-h-screen bg-brand-dark">
+    <div className="min-h-screen bg-brand-bg">
       {/* Backdrop */}
       <div className="relative h-[50vh] md:h-[60vh] overflow-hidden">
         {backdropSrc && !imgError ? (
@@ -77,10 +77,10 @@ export default function MovieDetails() {
             className="w-full h-full object-cover object-top"
           />
         ) : (
-          <div className="w-full h-full bg-gradient-to-br from-gray-900 via-purple-900/20 to-brand-dark" />
+          <div className="w-full h-full bg-gradient-to-br from-gray-900 via-purple-900/20 to-brand-bg" />
         )}
-        <div className="absolute inset-0 bg-gradient-to-t from-brand-dark via-brand-dark/60 to-transparent" />
-        <div className="absolute inset-0 bg-gradient-to-r from-brand-dark/80 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-brand-bg via-brand-bg/60 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-r from-brand-bg/80 to-transparent" />
 
         {/* Back button */}
         <Link
@@ -176,7 +176,7 @@ export default function MovieDetails() {
               <button
                 id="detail-watchlist-btn"
                 onClick={() => toggleWatchlist(movie)}
-                className={`btn-secondary text-base ${inWatchlist ? 'border-brand-red text-brand-red' : ''}`}
+                className={`btn-secondary text-base ${inWatchlist ? 'border-brand-cyan text-brand-cyan' : ''}`}
               >
                 {inWatchlist ? (
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -230,7 +230,7 @@ export default function MovieDetails() {
                   id={`similar-movie-${m.id}`}
                   className="group block"
                 >
-                  <div className="rounded-xl overflow-hidden bg-brand-card aspect-[2/3] shadow-lg mb-2 group-hover:ring-2 group-hover:ring-brand-red/60 transition-all duration-200">
+                  <div className="rounded-xl overflow-hidden bg-brand-card aspect-[2/3] shadow-lg mb-2 group-hover:ring-2 group-hover:ring-brand-cyan/60 transition-all duration-200">
                     {m.poster_path ? (
                       <img
                         src={`https://image.tmdb.org/t/p/w500${m.poster_path}`}
@@ -243,7 +243,7 @@ export default function MovieDetails() {
                       </div>
                     )}
                   </div>
-                  <p className="text-white text-xs font-medium truncate group-hover:text-brand-red transition-colors">{m.title}</p>
+                  <p className="text-white text-xs font-medium truncate group-hover:text-brand-cyan transition-colors">{m.title}</p>
                 </Link>
               ))}
             </div>
@@ -262,7 +262,7 @@ export default function MovieDetails() {
                   id={`recommended-movie-${m.id}`}
                   className="group block"
                 >
-                  <div className="rounded-xl overflow-hidden bg-brand-card aspect-[2/3] shadow-lg mb-2 group-hover:ring-2 group-hover:ring-brand-red/60 transition-all duration-200">
+                  <div className="rounded-xl overflow-hidden bg-brand-card aspect-[2/3] shadow-lg mb-2 group-hover:ring-2 group-hover:ring-brand-cyan/60 transition-all duration-200">
                     {m.poster_path ? (
                       <img
                         src={`https://image.tmdb.org/t/p/w500${m.poster_path}`}
@@ -275,7 +275,7 @@ export default function MovieDetails() {
                       </div>
                     )}
                   </div>
-                  <p className="text-white text-xs font-medium truncate group-hover:text-brand-red transition-colors">{m.title}</p>
+                  <p className="text-white text-xs font-medium truncate group-hover:text-brand-cyan transition-colors">{m.title}</p>
                 </Link>
               ))}
             </div>

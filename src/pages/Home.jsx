@@ -1,15 +1,19 @@
 import { useState, useEffect } from 'react'
+import { motion } from 'framer-motion'
 import HeroBanner from '../components/HeroBanner'
+import AnimeHero from '../components/AnimeHero'
 import Row from '../components/Row'
-import { getTrending, getPopular, getTopRated, getUpcoming } from '../services/tmdb'
+import { getTrending, getPopular, getTopRated, getUpcoming, discoverMovies } from '../services/tmdb'
 
 export default function Home() {
   const [trending, setTrending] = useState([])
   const [popular, setPopular] = useState([])
   const [topRated, setTopRated] = useState([])
   const [upcoming, setUpcoming] = useState([])
+  const [anime, setAnime] = useState([])
   const [heroMovie, setHeroMovie] = useState(null)
-  
+  const [animeHero, setAnimeHero] = useState(null)
+
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState(null)
 
@@ -18,20 +22,25 @@ export default function Home() {
       setIsLoading(true)
       setError(null)
       try {
-        const [trendingData, popularData, topRatedData, upcomingData] = await Promise.all([
+        const [trendingData, popularData, topRatedData, upcomingData, animeData] = await Promise.all([
           getTrending(),
           getPopular(),
           getTopRated(),
-          getUpcoming()
+          getUpcoming(),
+          discoverMovies({ with_genres: 16, sort_by: 'popularity.desc', page: 1 }),
         ])
 
         setTrending(trendingData.results || [])
         setPopular(popularData.results || [])
         setTopRated(topRatedData.results || [])
         setUpcoming(upcomingData.results || [])
+        setAnime(animeData.results || [])
 
-        if (trendingData.results && trendingData.results.length > 0) {
+        if (trendingData.results?.length > 0) {
           setHeroMovie(trendingData.results[0])
+        }
+        if (animeData.results?.length > 0) {
+          setAnimeHero(animeData.results[0])
         }
       } catch (err) {
         console.error('Failed to load movies:', err)
@@ -50,13 +59,10 @@ export default function Home() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-brand-dark flex flex-col items-center justify-center text-center p-4">
-        <h2 className="text-2xl font-bold text-white mb-2">Oops! Something went wrong.</h2>
-        <p className="text-gray-400 mb-6">{error}</p>
-        <button 
-          onClick={() => window.location.reload()} 
-          className="btn-primary"
-        >
+      <div className="min-h-screen bg-brand-bg flex flex-col items-center justify-center text-center p-4">
+        <h2 className="text-2xl font-bold text-brand-text mb-2">Oops! Something went wrong.</h2>
+        <p className="text-brand-muted mb-6">{error}</p>
+        <button onClick={() => window.location.reload()} className="btn-primary">
           Try Again
         </button>
       </div>
@@ -64,21 +70,35 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen bg-brand-dark">
-      {/* Hero */}
+    <div className="min-h-screen bg-brand-bg">
       {heroMovie ? (
         <HeroBanner movie={heroMovie} />
       ) : (
-        <div className="w-full min-h-[90vh] md:min-h-screen bg-gray-900 animate-pulse" />
+        <div className="w-full min-h-[92vh] md:min-h-screen bg-brand-surface animate-pulse" />
       )}
 
-      {/* Primary Rows */}
-      <div className="relative z-10 -mt-8 pb-16 space-y-10">
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.6, delay: 0.3 }}
+        className="relative z-10 -mt-8 pb-20 space-y-12"
+      >
         <Row title="Trending Now" movies={trending} badge="Hot" isLoading={isLoading} />
-        <Row title="Popular on MovieXD" movies={popular} isLoading={isLoading} />
+        <Row title="Popular on MovieXD" movies={popular} isLoading={isLoading} seeAllLink="/discover" />
+
+        {!isLoading && animeHero && <AnimeHero movie={animeHero} />}
+
+        <Row
+          title="Anime & Animation"
+          movies={anime}
+          badge="Anime"
+          variant="anime"
+          isLoading={isLoading}
+          seeAllLink="/genre/16"
+        />
         <Row title="Top Rated" movies={topRated} isLoading={isLoading} />
         <Row title="Coming Soon" movies={upcoming} badge="New" isLoading={isLoading} />
-      </div>
+      </motion.div>
     </div>
   )
 }

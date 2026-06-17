@@ -6,13 +6,13 @@ export default function Watchlist() {
   const { watchlist } = useWatchlist()
 
   return (
-    <div className="min-h-screen bg-brand-dark pt-24 pb-16 px-4 sm:px-6 lg:px-8 max-w-screen-xl mx-auto">
+    <div className="min-h-screen bg-brand-bg pt-24 pb-16 px-4 sm:px-6 lg:px-8 max-w-screen-xl mx-auto">
       {/* Header */}
       <div className="mb-10">
         <div className="flex items-center gap-3 mb-2">
-          <div className="w-1 h-8 bg-brand-red rounded-full" />
+          <div className="w-1 h-8 bg-brand-cyan rounded-full" />
           <h1 className="text-3xl sm:text-4xl font-black text-white">My List</h1>
-          <span className="ml-2 px-3 py-1 bg-brand-red/20 border border-red-800/40 text-red-400 text-sm font-semibold rounded-full">
+          <span className="ml-2 px-3 py-1 bg-brand-cyan/20 border border-brand-cyan/40 text-brand-cyan text-sm font-semibold rounded-full">
             {watchlist.length} {watchlist.length === 1 ? 'title' : 'titles'}
           </span>
         </div>
@@ -47,7 +47,7 @@ export default function Watchlist() {
               <Link
                 to={`/movie/${watchlist[0].id}`}
                 id="watchlist-featured-item"
-                className="group block relative rounded-2xl overflow-hidden bg-brand-card border border-brand-border hover:border-brand-red/50 transition-all duration-300"
+                className="group block relative rounded-2xl overflow-hidden bg-brand-card border border-brand-border hover:border-brand-cyan/50 transition-all duration-300"
               >
                 <div className="flex flex-col sm:flex-row gap-0">
                   <div className="sm:w-48 aspect-[16/9] sm:aspect-auto flex-shrink-0 relative">
@@ -58,7 +58,7 @@ export default function Watchlist() {
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                       />
                     ) : (
-                      <div className="w-full h-full bg-brand-dark flex items-center justify-center">
+                      <div className="w-full h-full bg-brand-bg flex items-center justify-center">
                         <span className="text-gray-600 text-sm">{watchlist[0].title}</span>
                       </div>
                     )}
@@ -71,8 +71,8 @@ export default function Watchlist() {
                     </div>
                   </div>
                   <div className="p-5 flex flex-col justify-center">
-                    <p className="text-xs text-brand-red font-semibold uppercase tracking-wider mb-1">Movie</p>
-                    <h3 className="text-white text-xl font-bold mb-2 group-hover:text-brand-red transition-colors">
+                    <p className="text-xs text-brand-cyan font-semibold uppercase tracking-wider mb-1">Movie</p>
+                    <h3 className="text-white text-xl font-bold mb-2 group-hover:text-brand-cyan transition-colors">
                       {watchlist[0].title}
                     </h3>
                     {watchlist[0].vote_average > 0 && (
@@ -86,7 +86,7 @@ export default function Watchlist() {
                     )}
                     {/* Fake progress bar */}
                     <div className="w-full max-w-xs bg-white/10 rounded-full h-1.5 mb-1">
-                      <div className="bg-brand-red h-1.5 rounded-full w-[38%]" />
+                      <div className="bg-brand-cyan h-1.5 rounded-full w-[38%]" />
                     </div>
                     <p className="text-gray-500 text-xs">38% watched</p>
                   </div>

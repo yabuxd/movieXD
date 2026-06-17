@@ -95,12 +95,12 @@ export default function Discover() {
   }, [inView, loadMore])
 
   return (
-    <div className="min-h-screen bg-brand-dark pt-24 pb-16 px-4 sm:px-6 lg:px-8 max-w-screen-xl mx-auto">
+    <div className="min-h-screen bg-brand-bg pt-24 pb-16 px-4 sm:px-6 lg:px-8 max-w-screen-xl mx-auto">
       
       {/* 1. Genre Navigation */}
       <div className="mb-16">
-        <h1 className="text-3xl sm:text-4xl font-black text-white mb-2">Explore Genres</h1>
-        <p className="text-gray-400 mb-8">Discover movies perfectly suited to your mood.</p>
+        <h1 className="text-3xl sm:text-4xl font-black text-brand-text mb-2">Explore Genres</h1>
+        <p className="text-brand-muted mb-8">Discover movies perfectly suited to your mood.</p>
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
           {genres.length > 0 ? (
             genres.map(genre => <GenreCard key={genre.id} genre={genre} />)

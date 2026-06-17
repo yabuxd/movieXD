@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { NavLink, Link, useNavigate, useLocation } from 'react-router-dom'
+import { motion, AnimatePresence } from 'framer-motion'
 import { useWatchlist } from '../context/WatchlistContext'
 import GenreDropdown from './GenreDropdown'
 
@@ -37,116 +38,87 @@ export default function Navbar() {
     { to: { pathname: '/discover', search: '?type=tv' }, label: 'TV Shows' },
   ]
 
+  const navPill = (active) =>
+    `px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 ${
+      active
+        ? 'nav-pill-active text-brand-cyan'
+        : 'text-brand-muted hover:text-brand-text hover:bg-brand-surface/50'
+    }`
+
   return (
     <>
       <header
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-          scrolled
-            ? 'bg-brand-dark/95 backdrop-blur-md shadow-2xl border-b border-brand-border'
-            : 'bg-gradient-to-b from-black/80 to-transparent'
+        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
+          scrolled ? 'glass-nav shadow-nav' : 'bg-transparent'
         }`}
       >
         <div className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
-            {/* Logo */}
-            <Link
-              to="/"
-              id="cineflow-logo"
-              className="flex items-center gap-2 group select-none"
-            >
-              <div className="w-8 h-8 rounded-lg bg-brand-red flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-200">
+            <Link to="/" id="cineflow-logo" className="flex items-center gap-2.5 group select-none">
+              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-brand-cyan to-brand-purple flex items-center justify-center shadow-glow-cyan group-hover:scale-105 transition-transform duration-300">
                 <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-                  <path d="M3 3l4 4-4 4V3zm5 0h7v2h-7V3zm0 4h5v2h-5V7zm0 4h7v2h-7v-2z" fill="white" />
+                  <path d="M3 3l4 4-4 4V3zm5 0h7v2h-7V3zm0 4h5v2h-5V7zm0 4h7v2h-7v-2z" fill="#0A0F1E" />
                 </svg>
               </div>
               <span className="text-xl font-black tracking-tight">
-                <span className="text-white">Movie</span>
-                <span className="text-brand-red">XD</span>
+                <span className="text-brand-text">Movie</span>
+                <span className="text-gradient-cyan">XD</span>
               </span>
             </Link>
 
-            {/* Desktop Nav */}
             <nav className="hidden md:flex items-center gap-1">
-              <NavLink
-                to="/"
-                end
-                id="nav-home"
-                className={({ isActive }) =>
-                  `px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
-                    isActive
-                      ? 'text-white bg-white/10'
-                      : 'text-gray-400 hover:text-white hover:bg-white/5'
-                  }`
-                }
-              >
+              <NavLink to="/" end id="nav-home" className={({ isActive }) => navPill(isActive)}>
                 Home
               </NavLink>
-              <NavLink
-                to="/discover"
-                id="nav-movies"
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
-                  isMoviesActive
-                    ? 'text-white bg-white/10'
-                    : 'text-gray-400 hover:text-white hover:bg-white/5'
-                }`}
-              >
+              <NavLink to="/discover" id="nav-movies" className={navPill(isMoviesActive)}>
                 Movies
               </NavLink>
               <NavLink
                 to={{ pathname: '/discover', search: '?type=tv' }}
                 id="nav-tv-shows"
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
-                  isTvActive
-                    ? 'text-white bg-white/10'
-                    : 'text-gray-400 hover:text-white hover:bg-white/5'
-                }`}
+                className={navPill(isTvActive)}
               >
                 TV Shows
               </NavLink>
               <GenreDropdown />
             </nav>
 
-            {/* Right Controls */}
-            <div className="flex items-center gap-2">
-              {/* Search */}
+            <div className="flex items-center gap-1">
               <button
                 id="navbar-search-btn"
                 onClick={() => setSearchOpen(true)}
-                className="p-2 rounded-lg text-gray-400 hover:text-white hover:bg-white/10 transition-all duration-200"
+                className="p-2.5 rounded-xl text-brand-muted hover:text-brand-cyan hover:bg-brand-surface/60 transition-all duration-300"
                 aria-label="Open search"
               >
                 <SearchIcon />
               </button>
 
-              {/* Watchlist */}
               <Link
                 to="/watchlist"
                 id="navbar-watchlist-btn"
-                className="relative p-2 rounded-lg text-gray-400 hover:text-white hover:bg-white/10 transition-all duration-200"
+                className="relative p-2.5 rounded-xl text-brand-muted hover:text-brand-cyan hover:bg-brand-surface/60 transition-all duration-300"
                 aria-label="My Watchlist"
               >
                 <BookmarkIcon />
                 {watchlist.length > 0 && (
-                  <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-brand-red text-white text-[9px] font-bold rounded-full flex items-center justify-center">
+                  <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-brand-cyan text-brand-bg text-[9px] font-bold rounded-full flex items-center justify-center">
                     {watchlist.length > 9 ? '9+' : watchlist.length}
                   </span>
                 )}
               </Link>
 
-              {/* Profile Avatar */}
               <Link
                 to="/login"
                 id="navbar-profile-btn"
-                className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-brand-red flex items-center justify-center text-xs font-bold text-white hover:ring-2 hover:ring-brand-red/50 transition-all duration-200"
+                className="w-9 h-9 rounded-full bg-gradient-to-br from-brand-purple to-brand-cyan flex items-center justify-center text-xs font-bold text-brand-bg hover:shadow-glow-cyan transition-all duration-300"
                 aria-label="Profile"
               >
-                CF
+                MX
               </Link>
 
-              {/* Mobile menu button */}
               <button
                 id="navbar-mobile-menu-btn"
-                className="md:hidden p-2 rounded-lg text-gray-400 hover:text-white hover:bg-white/10 transition-all duration-200"
+                className="md:hidden p-2.5 rounded-xl text-brand-muted hover:text-brand-text hover:bg-brand-surface/60 transition-all duration-300"
                 onClick={() => setMobileOpen(!mobileOpen)}
                 aria-label="Toggle menu"
               >
@@ -156,78 +128,88 @@ export default function Navbar() {
           </div>
         </div>
 
-        {/* Mobile Menu */}
-        {mobileOpen && (
-          <div className="md:hidden border-t border-brand-border bg-brand-dark/98 backdrop-blur-md">
-            <nav className="px-4 py-3 flex flex-col gap-1">
-              {navLinks.map(({ to, label, end }) => {
-                const isMoviesLink = label === 'Movies'
-                const isTvLink = label === 'TV Shows'
-                const active =
-                  (isMoviesLink && isMoviesActive) ||
-                  (isTvLink && isTvActive) ||
-                  (end ? location.pathname === '/' : false)
+        <AnimatePresence>
+          {mobileOpen && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              className="md:hidden border-t border-white/[0.06] glass overflow-hidden"
+            >
+              <nav className="px-4 py-3 flex flex-col gap-1">
+                {navLinks.map(({ to, label, end }) => {
+                  const isMoviesLink = label === 'Movies'
+                  const isTvLink = label === 'TV Shows'
+                  const active =
+                    (isMoviesLink && isMoviesActive) ||
+                    (isTvLink && isTvActive) ||
+                    (end ? location.pathname === '/' : false)
 
-                return (
-                  <NavLink
-                    key={label}
-                    to={to}
-                    end={end}
-                    onClick={() => setMobileOpen(false)}
-                    className={`px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200 ${
-                      active
-                        ? 'text-white bg-white/10 border-l-2 border-brand-red'
-                        : 'text-gray-400 hover:text-white hover:bg-white/5'
-                    }`}
-                  >
-                    {label}
-                  </NavLink>
-                )
-              })}
-              <GenreDropdown
-                variant="mobile"
-                onNavigate={() => setMobileOpen(false)}
-              />
-            </nav>
-          </div>
-        )}
+                  return (
+                    <NavLink
+                      key={label}
+                      to={to}
+                      end={end}
+                      onClick={() => setMobileOpen(false)}
+                      className={`px-4 py-3 rounded-xl text-sm font-medium transition-all duration-300 ${
+                        active
+                          ? 'text-brand-cyan bg-brand-surface/80 border-l-2 border-brand-cyan'
+                          : 'text-brand-muted hover:text-brand-text hover:bg-brand-surface/40'
+                      }`}
+                    >
+                      {label}
+                    </NavLink>
+                  )
+                })}
+                <GenreDropdown variant="mobile" onNavigate={() => setMobileOpen(false)} />
+              </nav>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </header>
 
-      {/* Search Overlay */}
-      {searchOpen && (
-        <div
-          className="fixed inset-0 z-[60] bg-black/70 backdrop-blur-md flex items-start justify-center pt-24 px-4"
-          onClick={(e) => e.target === e.currentTarget && setSearchOpen(false)}
-        >
-          <form
-            onSubmit={handleSearch}
-            className="w-full max-w-2xl relative"
+      <AnimatePresence>
+        {searchOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[60] bg-brand-bg/80 backdrop-blur-xl flex items-start justify-center pt-24 px-4"
+            onClick={(e) => e.target === e.currentTarget && setSearchOpen(false)}
           >
-            <div className="flex items-center glass rounded-2xl px-4 py-3 border border-white/20 shadow-2xl">
-              <SearchIcon className="text-gray-400 mr-3 flex-shrink-0" />
-              <input
-                id="search-input-overlay"
-                type="text"
-                autoFocus
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder="Search movies, shows, actors..."
-                className="flex-1 bg-transparent text-white placeholder-gray-500 text-lg outline-none"
-              />
-              <button
-                type="button"
-                onClick={() => setSearchOpen(false)}
-                className="ml-3 text-gray-400 hover:text-white transition-colors"
-              >
-                <CloseIcon />
-              </button>
-            </div>
-            <p className="text-center text-gray-500 text-sm mt-4">
-              Press <kbd className="px-2 py-0.5 bg-white/10 rounded text-xs">Enter</kbd> to search
-            </p>
-          </form>
-        </div>
-      )}
+            <motion.form
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              onSubmit={handleSearch}
+              className="w-full max-w-2xl relative"
+            >
+              <div className="flex items-center glass rounded-2xl px-5 py-4 border border-brand-cyan/20 shadow-glow-cyan">
+                <SearchIcon className="text-brand-cyan mr-3 flex-shrink-0" />
+                <input
+                  id="search-input-overlay"
+                  type="text"
+                  autoFocus
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  placeholder="Search movies, anime, shows..."
+                  className="flex-1 bg-transparent text-brand-text placeholder-brand-muted text-lg outline-none"
+                />
+                <button
+                  type="button"
+                  onClick={() => setSearchOpen(false)}
+                  className="ml-3 text-brand-muted hover:text-brand-text transition-colors"
+                >
+                  <CloseIcon />
+                </button>
+              </div>
+              <p className="text-center text-brand-muted text-sm mt-4">
+                Press <kbd className="px-2 py-0.5 bg-brand-surface rounded text-xs border border-white/[0.08]">Enter</kbd> to search
+              </p>
+            </motion.form>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </>
   )
 }
