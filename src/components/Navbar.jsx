@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
-import { NavLink, Link, useNavigate } from 'react-router-dom'
+import { NavLink, Link, useNavigate, useLocation } from 'react-router-dom'
 import { useWatchlist } from '../context/WatchlistContext'
+import GenreDropdown from './GenreDropdown'
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false)
@@ -9,6 +10,11 @@ export default function Navbar() {
   const [query, setQuery] = useState('')
   const { watchlist } = useWatchlist()
   const navigate = useNavigate()
+  const location = useLocation()
+  const isMoviesActive =
+    location.pathname === '/discover' && !location.search.includes('type=tv')
+  const isTvActive =
+    location.pathname === '/discover' && location.search.includes('type=tv')
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 50)
@@ -26,9 +32,9 @@ export default function Navbar() {
   }
 
   const navLinks = [
-    { to: '/', label: 'Home' },
-    { to: '/discover', label: 'Discover' },
-    { to: '/watchlist', label: 'My List' },
+    { to: '/', label: 'Home', end: true },
+    { to: '/discover', label: 'Movies' },
+    { to: { pathname: '/discover', search: '?type=tv' }, label: 'TV Shows' },
   ]
 
   return (
@@ -61,23 +67,43 @@ export default function Navbar() {
 
             {/* Desktop Nav */}
             <nav className="hidden md:flex items-center gap-1">
-              {navLinks.map(({ to, label }) => (
-                <NavLink
-                  key={to}
-                  to={to}
-                  end={to === '/'}
-                  id={`nav-${label.toLowerCase().replace(/\s/g, '-')}`}
-                  className={({ isActive }) =>
-                    `px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 relative ${
-                      isActive
-                        ? 'text-white bg-white/10'
-                        : 'text-gray-400 hover:text-white hover:bg-white/5'
-                    }`
-                  }
-                >
-                  {label}
-                </NavLink>
-              ))}
+              <NavLink
+                to="/"
+                end
+                id="nav-home"
+                className={({ isActive }) =>
+                  `px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                    isActive
+                      ? 'text-white bg-white/10'
+                      : 'text-gray-400 hover:text-white hover:bg-white/5'
+                  }`
+                }
+              >
+                Home
+              </NavLink>
+              <NavLink
+                to="/discover"
+                id="nav-movies"
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                  isMoviesActive
+                    ? 'text-white bg-white/10'
+                    : 'text-gray-400 hover:text-white hover:bg-white/5'
+                }`}
+              >
+                Movies
+              </NavLink>
+              <NavLink
+                to={{ pathname: '/discover', search: '?type=tv' }}
+                id="nav-tv-shows"
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                  isTvActive
+                    ? 'text-white bg-white/10'
+                    : 'text-gray-400 hover:text-white hover:bg-white/5'
+                }`}
+              >
+                TV Shows
+              </NavLink>
+              <GenreDropdown />
             </nav>
 
             {/* Right Controls */}
@@ -134,23 +160,34 @@ export default function Navbar() {
         {mobileOpen && (
           <div className="md:hidden border-t border-brand-border bg-brand-dark/98 backdrop-blur-md">
             <nav className="px-4 py-3 flex flex-col gap-1">
-              {navLinks.map(({ to, label }) => (
-                <NavLink
-                  key={to}
-                  to={to}
-                  end={to === '/'}
-                  onClick={() => setMobileOpen(false)}
-                  className={({ isActive }) =>
-                    `px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200 ${
-                      isActive
+              {navLinks.map(({ to, label, end }) => {
+                const isMoviesLink = label === 'Movies'
+                const isTvLink = label === 'TV Shows'
+                const active =
+                  (isMoviesLink && isMoviesActive) ||
+                  (isTvLink && isTvActive) ||
+                  (end ? location.pathname === '/' : false)
+
+                return (
+                  <NavLink
+                    key={label}
+                    to={to}
+                    end={end}
+                    onClick={() => setMobileOpen(false)}
+                    className={`px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200 ${
+                      active
                         ? 'text-white bg-white/10 border-l-2 border-brand-red'
                         : 'text-gray-400 hover:text-white hover:bg-white/5'
-                    }`
-                  }
-                >
-                  {label}
-                </NavLink>
-              ))}
+                    }`}
+                  >
+                    {label}
+                  </NavLink>
+                )
+              })}
+              <GenreDropdown
+                variant="mobile"
+                onNavigate={() => setMobileOpen(false)}
+              />
             </nav>
           </div>
         )}
