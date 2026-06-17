@@ -5,6 +5,9 @@ node_modules/
 dist/
 dist-ssr/
 
+# Generated at build (contains API proxy with key)
+public/_redirects
+
 # Environment variables (never commit secrets)
 .env
 .env.local

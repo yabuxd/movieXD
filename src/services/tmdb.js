@@ -3,24 +3,12 @@ import axios from 'axios'
 const TMDB_API_KEY = import.meta.env.VITE_TMDB_API_KEY || ''
 const IS_PROD = import.meta.env.PROD
 
-// In production, route through Netlify Function so the API key stays server-side
-// and works even when VITE_* vars are not set at build time.
+// Dev: call TMDB directly with .env key
+// Prod: same-origin proxy (/api/tmdb/* → TMDB) generated at build time
 const tmdbApi = axios.create({
-  baseURL: IS_PROD ? '/.netlify/functions/tmdb' : 'https://api.themoviedb.org/3',
+  baseURL: IS_PROD ? '/api/tmdb' : 'https://api.themoviedb.org/3',
   params: IS_PROD ? {} : { api_key: TMDB_API_KEY },
 })
-
-if (IS_PROD) {
-  tmdbApi.interceptors.request.use((config) => {
-    const endpoint = config.url || '/'
-    config.params = {
-      ...config.params,
-      endpoint,
-    }
-    config.url = ''
-    return config
-  })
-}
 
 export const getTrending = async () => {
   const response = await tmdbApi.get('/trending/movie/day')

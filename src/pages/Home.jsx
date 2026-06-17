@@ -38,7 +38,7 @@ export default function Home() {
         const apiMessage = err.response?.data?.status_message
         setError(
           apiMessage ||
-            'Failed to load movies. If this is the hosted site, add TMDB_API_KEY in Netlify environment variables and redeploy.'
+            'Failed to load movies. Add VITE_TMDB_API_KEY in Netlify → Site configuration → Environment variables, then redeploy.'
         )
       } finally {
         setIsLoading(false)
