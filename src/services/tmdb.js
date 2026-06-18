@@ -4,10 +4,11 @@ const TMDB_API_KEY = import.meta.env.VITE_TMDB_API_KEY || ''
 const IS_PROD = import.meta.env.PROD
 
 // Dev: call TMDB directly with .env key
-// Prod: same-origin proxy (/api/tmdb/* → TMDB) generated at build time
+// Prod: Netlify Function proxy (/api/tmdb/* → TMDB) keeps key server-side
 const tmdbApi = axios.create({
   baseURL: IS_PROD ? '/api/tmdb' : 'https://api.themoviedb.org/3',
   params: IS_PROD ? {} : { api_key: TMDB_API_KEY },
+  timeout: 15000, // 15 second timeout
 })
 
 export const getTrending = async () => {

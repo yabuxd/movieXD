@@ -22,7 +22,8 @@ export default function Home() {
       setIsLoading(true)
       setError(null)
       try {
-        const [trendingData, popularData, topRatedData, upcomingData, animeData] = await Promise.all([
+        // Use allSettled so partial failures don't break the entire page
+        const results = await Promise.allSettled([
           getTrending(),
           getPopular(),
           getTopRated(),
@@ -30,25 +31,44 @@ export default function Home() {
           discoverMovies({ with_genres: 16, sort_by: 'popularity.desc', page: 1 }),
         ])
 
-        setTrending(trendingData.results || [])
-        setPopular(popularData.results || [])
-        setTopRated(topRatedData.results || [])
-        setUpcoming(upcomingData.results || [])
-        setAnime(animeData.results || [])
+        const [trendingRes, popularRes, topRatedRes, upcomingRes, animeRes] = results
 
-        if (trendingData.results?.length > 0) {
-          setHeroMovie(trendingData.results[0])
+        // Check if ALL requests failed
+        const allFailed = results.every(r => r.status === 'rejected')
+        if (allFailed) {
+          const firstError = results[0].reason
+          const apiMessage = firstError?.response?.data?.status_message
+          throw new Error(
+            apiMessage ||
+              firstError?.message ||
+              'Unable to connect to the movie database. Please check your connection and try again.'
+          )
         }
-        if (animeData.results?.length > 0) {
-          setAnimeHero(animeData.results[0])
+
+        // Extract successful results (gracefully handle individual failures)
+        const extract = (res) => res.status === 'fulfilled' ? (res.value?.results || []) : []
+
+        const trendingData = extract(trendingRes)
+        const popularData = extract(popularRes)
+        const topRatedData = extract(topRatedRes)
+        const upcomingData = extract(upcomingRes)
+        const animeData = extract(animeRes)
+
+        setTrending(trendingData)
+        setPopular(popularData)
+        setTopRated(topRatedData)
+        setUpcoming(upcomingData)
+        setAnime(animeData)
+
+        if (trendingData.length > 0) {
+          setHeroMovie(trendingData[0])
+        }
+        if (animeData.length > 0) {
+          setAnimeHero(animeData[0])
         }
       } catch (err) {
         console.error('Failed to load movies:', err)
-        const apiMessage = err.response?.data?.status_message
-        setError(
-          apiMessage ||
-            'Failed to load movies. Add VITE_TMDB_API_KEY in Netlify → Site configuration → Environment variables, then redeploy.'
-        )
+        setError(err.message || 'Something went wrong. Please try again.')
       } finally {
         setIsLoading(false)
       }
