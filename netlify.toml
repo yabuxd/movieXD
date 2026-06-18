@@ -5,4 +5,8 @@
 [build.environment]
   NODE_VERSION = "20"
 
-# SPA + TMDB proxy redirects are generated into dist/_redirects at build time
+# SPA fallback for client-side routing
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
