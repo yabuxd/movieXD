@@ -21,7 +21,7 @@ export default function AnimeHero({ movie }) {
       )}
 
       <div className="absolute inset-0 bg-gradient-to-r from-brand-bg via-brand-bg/90 to-brand-bg/60" />
-      <div className="absolute inset-0 bg-gradient-to-br from-brand-cyan/10 via-transparent to-brand-purple/15" />
+      <div className="absolute inset-0 bg-gradient-to-br from-brand-gold/10 via-transparent to-brand-gold-muted/15" />
 
       <div className="relative z-10 flex flex-col md:flex-row items-center gap-8 p-8 md:p-12 lg:p-16">
         <motion.div
@@ -31,7 +31,7 @@ export default function AnimeHero({ movie }) {
           transition={{ duration: 0.6 }}
           className="flex-1 text-center md:text-left"
         >
-          <span className="badge-purple mb-4 inline-flex">Featured Anime</span>
+          <span className="badge-gold mb-4 inline-flex">Featured Anime</span>
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-brand-text mb-4 tracking-tight">
             {movie.title}
           </h2>
@@ -39,7 +39,7 @@ export default function AnimeHero({ movie }) {
             {movie.overview}
           </p>
           <div className="flex flex-wrap gap-3 justify-center md:justify-start">
-            <Link to={`/movie/${movie.id}`} className="btn-purple">
+            <Link to={`/movie/${movie.id}`} className="btn-primary">
               <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M8 5v14l11-7z" />
               </svg>
@@ -59,7 +59,7 @@ export default function AnimeHero({ movie }) {
             transition={{ duration: 0.6, delay: 0.15 }}
             className="flex-shrink-0"
           >
-            <div className="w-44 sm:w-52 rounded-2xl overflow-hidden shadow-glow-purple ring-2 ring-brand-purple/30 poster-glow-anime">
+            <div className="w-44 sm:w-52 rounded-2xl overflow-hidden ring-2 ring-brand-gold/30 poster-glow">
               <img
                 src={`https://image.tmdb.org/t/p/w500${movie.poster_path}`}
                 alt={movie.title}

@@ -17,11 +17,11 @@ export default function GenreDropdownItem({ genre, onClick, compact = false, fea
       } ${
         isActive
           ? isAnime
-            ? 'bg-brand-purple/90 text-white font-semibold shadow-glow-purple'
-            : 'bg-brand-cyan/90 text-brand-bg font-semibold shadow-glow-cyan'
+            ? 'bg-brand-gold-muted/90 text-white font-semibold shadow-glow-gold'
+            : 'bg-brand-gold text-brand-bg font-semibold shadow-glow-gold'
           : isAnime
-            ? 'text-brand-purple hover:text-white hover:bg-brand-purple/15 border border-transparent hover:border-brand-purple/30'
-            : 'text-brand-muted hover:text-brand-text hover:bg-brand-cyan/10'
+            ? 'text-brand-gold-muted hover:text-white hover:bg-brand-gold-muted/15 border border-transparent hover:border-brand-gold-muted/30'
+            : 'text-brand-muted hover:text-brand-text hover:bg-brand-gold/10'
       }`}
     >
       <motion.span
@@ -30,7 +30,7 @@ export default function GenreDropdownItem({ genre, onClick, compact = false, fea
         transition={{ type: 'spring', stiffness: 400, damping: 25 }}
       >
         {isAnime && (
-          <span className="w-1.5 h-1.5 rounded-full bg-brand-purple flex-shrink-0" />
+          <span className="w-1.5 h-1.5 rounded-full bg-brand-gold-muted flex-shrink-0" />
         )}
         {genre.name}
       </motion.span>

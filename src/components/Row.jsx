@@ -20,11 +20,11 @@ export default function Row({
     rowRef.current.scrollBy({ left: dir === 'left' ? -amount : amount, behavior: 'smooth' })
   }
 
-  const badgeClass = isAnime ? 'badge-purple' : 'badge-cyan'
-  const hoverAccent = isAnime ? 'hover:text-brand-purple' : 'hover:text-brand-cyan'
+  const badgeClass = isAnime ? 'badge-gold-muted' : 'badge-gold'
+  const hoverAccent = isAnime ? 'hover:text-brand-gold-muted' : 'hover:text-brand-gold'
   const arrowHover = isAnime
-    ? 'hover:bg-brand-purple/80 hover:border-brand-purple hover:shadow-glow-purple'
-    : 'hover:bg-brand-cyan/80 hover:border-brand-cyan hover:shadow-glow-cyan'
+    ? 'hover:bg-brand-gold-muted/80 hover:border-brand-gold-muted hover:shadow-glow-gold'
+    : 'hover:bg-brand-gold/80 hover:border-brand-gold hover:shadow-glow-gold'
 
   return (
     <section id={`row-${title.toLowerCase().replace(/\s+/g, '-')}`} className="relative group/row">

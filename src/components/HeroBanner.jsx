@@ -54,7 +54,7 @@ export default function HeroBanner({ movie }) {
       <div className="absolute top-0 left-0 right-0 h-40 bg-gradient-to-b from-brand-bg/80 to-transparent" />
 
       {/* Ambient glow */}
-      <div className="absolute bottom-1/4 left-1/4 w-96 h-96 bg-brand-cyan/5 rounded-full blur-3xl animate-pulse-glow pointer-events-none" />
+      <div className="absolute bottom-1/4 left-1/4 w-96 h-96 bg-brand-gold/5 rounded-full blur-3xl animate-pulse-glow pointer-events-none" />
 
       <div className="relative z-10 w-full max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 pb-20 md:pb-32 pt-32">
         <motion.div
@@ -65,7 +65,7 @@ export default function HeroBanner({ movie }) {
         >
           <div className="flex flex-wrap gap-2 mb-5">
             {(movie.genres || []).slice(0, 3).map((g) => (
-              <span key={g} className="badge-cyan">{g}</span>
+              <span key={g} className="badge-gold">{g}</span>
             ))}
           </div>
 
@@ -75,8 +75,8 @@ export default function HeroBanner({ movie }) {
 
           <div className="flex items-center gap-4 mb-6">
             <div className="flex items-center gap-1.5 px-3 py-1 rounded-lg glass">
-              <StarIcon className="text-amber-400 w-4 h-4" />
-              <span className="text-amber-300 font-bold">{movie.vote_average?.toFixed(1)}</span>
+              <StarIcon className="text-brand-gold w-4 h-4" />
+              <span className="text-brand-gold font-bold">{movie.vote_average?.toFixed(1)}</span>
             </div>
             <span className="text-brand-muted text-sm">
               {movie.release_date ? new Date(movie.release_date).getFullYear() : 'TBA'}
@@ -103,7 +103,7 @@ export default function HeroBanner({ movie }) {
             <button
               id="hero-watchlist-btn"
               onClick={() => toggleWatchlist(movie)}
-              className={`btn-secondary text-base ${inWatchlist ? '!border-brand-purple !text-brand-purple' : ''}`}
+              className={`btn-secondary text-base ${inWatchlist ? '!border-brand-gold-muted !text-brand-gold-muted' : ''}`}
             >
               {inWatchlist ? <CheckIcon /> : <PlusIcon />}
               {inWatchlist ? 'Saved' : 'My List'}
@@ -120,7 +120,7 @@ export default function HeroBanner({ movie }) {
           <div
             key={i}
             className={`h-1 rounded-full transition-all duration-500 ${
-              i === imgIndex % 3 ? 'w-8 bg-brand-cyan' : 'w-4 bg-white/20'
+              i === imgIndex % 3 ? 'w-8 bg-brand-gold' : 'w-4 bg-white/20'
             }`}
           />
         ))}

@@ -99,7 +99,7 @@ export default function GenreMenu({
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search genres..."
-            className="w-full pl-9 pr-4 py-2.5 text-sm rounded-xl bg-brand-surface/60 border border-white/[0.08] text-brand-text placeholder-brand-muted outline-none focus:border-brand-cyan/50 focus:ring-1 focus:ring-brand-cyan/20 transition-all duration-200"
+            className="w-full pl-9 pr-4 py-2.5 text-sm rounded-xl bg-brand-surface/60 border border-white/[0.08] text-brand-text placeholder-brand-muted outline-none focus:border-brand-gold/50 focus:ring-1 focus:ring-brand-gold/20 transition-all duration-200"
             aria-label="Search genres"
           />
         </div>
@@ -118,11 +118,11 @@ export default function GenreMenu({
           <motion.div variants={listVariants} initial="hidden" animate="visible">
             {showAnime && (
               <section className="mb-4">
-                <h3 className="text-[11px] font-semibold uppercase tracking-wider text-brand-purple mb-2 px-1 flex items-center gap-1.5">
-                  <span className="w-2 h-2 rounded-full bg-brand-purple" />
+                <h3 className="text-[11px] font-semibold uppercase tracking-wider text-brand-gold-muted mb-2 px-1 flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-brand-gold-muted" />
                   Featured — Anime
                 </h3>
-                <div className="p-2 rounded-xl bg-gradient-to-r from-brand-cyan/5 to-brand-purple/10 border border-brand-purple/20">
+                <div className="p-2 rounded-xl bg-gradient-to-r from-brand-gold/5 to-brand-gold-muted/10 border border-brand-gold-muted/20">
                   <GenreDropdownItem
                     genre={animeGenre}
                     onClick={onClose}

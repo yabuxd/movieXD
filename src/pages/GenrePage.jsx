@@ -93,8 +93,8 @@ export default function GenrePage() {
   return (
     <div className="min-h-screen bg-brand-bg">
       {/* Hero Banner */}
-      <div className="relative pt-32 pb-16 px-4 sm:px-6 lg:px-8 max-w-screen-xl mx-auto border-b border-white/[0.08] bg-gradient-to-br from-brand-cyan/10 via-brand-surface to-transparent">
-        <Link to="/discover" className="inline-flex items-center gap-2 text-brand-muted hover:text-brand-cyan transition-colors text-sm font-medium mb-6">
+      <div className="relative pt-32 pb-16 px-4 sm:px-6 lg:px-8 max-w-screen-xl mx-auto border-b border-white/[0.08] bg-gradient-to-br from-brand-gold/10 via-brand-surface to-transparent">
+        <Link to="/discover" className="inline-flex items-center gap-2 text-brand-muted hover:text-brand-gold transition-colors text-sm font-medium mb-6">
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
           </svg>

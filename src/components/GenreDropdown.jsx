@@ -126,12 +126,12 @@ export default function GenreDropdown({ variant = 'desktop', onNavigate }) {
           isMobile
             ? `w-full px-4 py-3 rounded-xl text-sm ${
                 open || isOnGenrePage
-                  ? 'text-brand-cyan bg-brand-surface/80 border-l-2 border-brand-cyan'
+                  ? 'text-brand-gold bg-brand-surface/80 border-l-2 border-brand-gold'
                   : 'text-brand-muted hover:text-brand-text hover:bg-brand-surface/40'
               }`
             : `px-4 py-2 rounded-xl text-sm ${
                 open || isOnGenrePage
-                  ? 'nav-pill-active text-brand-cyan'
+                  ? 'nav-pill-active text-brand-gold'
                   : 'text-brand-muted hover:text-brand-text hover:bg-brand-surface/50'
               }`
         }`}

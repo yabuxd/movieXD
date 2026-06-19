@@ -22,7 +22,7 @@ export default function DiscoverFilters() {
     <div className="glass rounded-2xl p-6 mb-8 border border-white/[0.08]">
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-xl font-bold text-brand-text">Smart Discovery</h2>
-        <button onClick={resetFilters} className="text-sm text-brand-muted hover:text-brand-cyan transition-colors">
+        <button onClick={resetFilters} className="text-sm text-brand-muted hover:text-brand-gold-hover transition-colors">
           Reset Filters
         </button>
       </div>
@@ -38,7 +38,7 @@ export default function DiscoverFilters() {
                 const val = e.target.value
                 setFilter('with_genres', val ? [Number(val)] : [])
               }}
-              className="w-full bg-brand-surface/60 border border-white/[0.08] rounded-xl px-3 py-2 text-brand-text outline-none focus:border-brand-cyan transition-colors"
+              className="w-full bg-brand-surface/60 border border-white/[0.08] rounded-xl px-3 py-2 text-brand-text outline-none focus:border-brand-gold transition-colors"
             >
               <option value="">Any Genre</option>
               {genres.map(g => (
@@ -52,7 +52,7 @@ export default function DiscoverFilters() {
             <select
               value={filters.primary_release_year}
               onChange={(e) => setFilter('primary_release_year', e.target.value)}
-              className="w-full bg-brand-surface/60 border border-white/[0.08] rounded-xl px-3 py-2 text-brand-text outline-none focus:border-brand-cyan transition-colors"
+              className="w-full bg-brand-surface/60 border border-white/[0.08] rounded-xl px-3 py-2 text-brand-text outline-none focus:border-brand-gold transition-colors"
             >
               <option value="">Any Year</option>
               {Array.from({ length: 50 }).map((_, i) => {
@@ -68,7 +68,7 @@ export default function DiscoverFilters() {
             <select
               value={filters['vote_average.gte']}
               onChange={(e) => setFilter('vote_average.gte', e.target.value)}
-              className="w-full bg-brand-surface/60 border border-white/[0.08] rounded-xl px-3 py-2 text-brand-text outline-none focus:border-brand-cyan transition-colors"
+              className="w-full bg-brand-surface/60 border border-white/[0.08] rounded-xl px-3 py-2 text-brand-text outline-none focus:border-brand-gold transition-colors"
             >
               <option value="">Any Rating</option>
               <option value="8">8+ ⭐️</option>
@@ -84,7 +84,7 @@ export default function DiscoverFilters() {
             <select
               value={filters.sort_by}
               onChange={(e) => setFilter('sort_by', e.target.value)}
-              className="w-full bg-brand-surface/60 border border-white/[0.08] rounded-xl px-3 py-2 text-brand-text outline-none focus:border-brand-cyan transition-colors"
+              className="w-full bg-brand-surface/60 border border-white/[0.08] rounded-xl px-3 py-2 text-brand-text outline-none focus:border-brand-gold transition-colors"
             >
               <option value="popularity.desc">Most Popular</option>
               <option value="popularity.asc">Least Popular</option>
@@ -100,7 +100,7 @@ export default function DiscoverFilters() {
             <select
               value={filters.with_original_language}
               onChange={(e) => setFilter('with_original_language', e.target.value)}
-              className="w-full bg-brand-surface/60 border border-white/[0.08] rounded-xl px-3 py-2 text-brand-text outline-none focus:border-brand-cyan transition-colors"
+              className="w-full bg-brand-surface/60 border border-white/[0.08] rounded-xl px-3 py-2 text-brand-text outline-none focus:border-brand-gold transition-colors"
             >
               <option value="">All Languages</option>
               <option value="en">English</option>

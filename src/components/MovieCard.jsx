@@ -31,21 +31,21 @@ export default function MovieCard({ movie, variant = 'default' }) {
     .slice(0, 2)
 
   const glowClass = isAnime ? 'poster-glow-anime' : 'poster-glow'
-  const hoverTitleColor = isAnime ? 'group-hover:text-brand-purple' : 'group-hover:text-brand-cyan'
-  const accentBg = isAnime ? 'bg-brand-purple' : 'bg-brand-cyan'
-  const accentText = isAnime ? 'text-brand-purple' : 'text-brand-cyan'
+  const hoverTitleColor = isAnime ? 'group-hover:text-brand-gold-muted' : 'group-hover:text-brand-gold'
+  const accentBg = isAnime ? 'bg-brand-gold-muted' : 'bg-brand-gold'
+  const accentText = isAnime ? 'text-brand-gold-muted' : 'text-brand-gold'
 
   return (
     <motion.div
       id={`movie-card-${movie.id}`}
       className="group relative flex-shrink-0 w-40 sm:w-48 md:w-52 cursor-pointer"
-      whileHover={{ y: -4 }}
-      transition={{ type: 'spring', stiffness: 300, damping: 22 }}
+      whileHover={{ y: -6 }}
+      transition={{ duration: 0.3, ease: 'easeOut' }}
     >
       <Link to={`/movie/${movie.id}`} className="block">
         <div
-          className={`relative rounded-2xl overflow-hidden bg-brand-card aspect-[2/3] shadow-card ${glowClass} ${
-            isAnime ? 'ring-1 ring-brand-purple/10' : 'ring-1 ring-white/[0.06]'
+          className={`relative rounded-2xl overflow-hidden bg-brand-card aspect-[2/3] shadow-card border border-transparent group-hover:border-[#D4AF37]/50 transition-all duration-300 ${glowClass} ${
+            isAnime ? 'ring-1 ring-brand-gold-muted/10' : 'ring-1 ring-white/[0.06]'
           }`}
         >
           {!imgLoaded && !imgError && (
@@ -78,11 +78,11 @@ export default function MovieCard({ movie, variant = 'default' }) {
           <div className="absolute inset-0 bg-card-gradient opacity-0 group-hover:opacity-100 transition-opacity duration-400 rounded-2xl" />
 
           {rating && (
-            <div className="absolute top-3 left-3 flex items-center gap-1 glass rounded-lg px-2 py-1 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-1 group-hover:translate-y-0">
-              <svg className="w-3 h-3 text-amber-400" fill="currentColor" viewBox="0 0 24 24">
+            <div className="absolute top-3 left-3 flex items-center gap-1 bg-[#121212]/95 border border-[#D4AF37]/40 rounded-lg px-2 py-1 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-1 group-hover:translate-y-0">
+              <svg className="w-3 h-3 text-[#D4AF37]" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
               </svg>
-              <span className="text-brand-text text-[11px] font-semibold">{rating}</span>
+              <span className="text-[#D4AF37] text-[11px] font-semibold">{rating}</span>
             </div>
           )}
 
@@ -109,7 +109,7 @@ export default function MovieCard({ movie, variant = 'default' }) {
           </button>
 
           <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300">
-            <div className={`w-14 h-14 glass rounded-full flex items-center justify-center ${isAnime ? 'shadow-glow-purple' : 'shadow-glow-cyan'}`}>
+            <div className="w-14 h-14 glass rounded-full flex items-center justify-center shadow-glow-gold">
               <svg className="w-6 h-6 text-brand-text ml-0.5" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M8 5v14l11-7z" />
               </svg>
@@ -129,8 +129,8 @@ export default function MovieCard({ movie, variant = 'default' }) {
               key={g}
               className={`text-[9px] font-semibold uppercase tracking-wide px-1.5 py-0.5 rounded-md leading-none ${
                 isAnime
-                  ? 'bg-brand-purple/10 border border-brand-purple/20 text-brand-purple'
-                  : 'bg-brand-cyan/10 border border-brand-cyan/20 text-brand-cyan'
+                  ? 'bg-brand-gold-muted/10 border border-brand-gold-muted/20 text-brand-gold-muted'
+                  : 'bg-brand-gold/10 border border-brand-gold/20 text-brand-gold'
               }`}
             >
               {g}

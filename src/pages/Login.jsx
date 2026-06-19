@@ -21,21 +21,21 @@ export default function Login() {
 
   return (
     <div className="min-h-screen bg-brand-bg flex items-center justify-center px-4 relative overflow-hidden">
-      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-brand-cyan/10 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute bottom-1/4 left-1/4 w-64 h-64 bg-brand-purple/10 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-brand-gold/10 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute bottom-1/4 left-1/4 w-64 h-64 bg-brand-gold-muted/10 rounded-full blur-3xl pointer-events-none" />
 
       <div className="relative z-10 w-full max-w-md">
         {/* Logo */}
         <div className="text-center mb-8">
           <Link to="/" className="inline-flex items-center gap-2 group">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-brand-cyan to-brand-purple flex items-center justify-center shadow-glow-cyan group-hover:scale-110 transition-transform">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-brand-gold to-brand-gold-muted flex items-center justify-center shadow-glow-gold group-hover:scale-110 transition-transform">
               <svg width="22" height="22" viewBox="0 0 18 18" fill="none">
                 <path d="M3 3l4 4-4 4V3zm5 0h7v2h-7V3zm0 4h5v2h-5V7zm0 4h7v2h-7v-2z" fill="#0A0F1E" />
               </svg>
             </div>
             <span className="text-2xl font-black">
               <span className="text-brand-text">Movie</span>
-              <span className="text-gradient-cyan">XD</span>
+              <span className="text-gradient-gold">XD</span>
             </span>
           </Link>
           <p className="text-gray-500 text-sm mt-2">Your cinema, everywhere.</p>
@@ -52,7 +52,7 @@ export default function Login() {
                 onClick={() => setTab(t)}
                 className={`flex-1 py-4 text-sm font-semibold transition-all duration-200 ${
                   tab === t
-                    ? 'bg-brand-cyan/10 text-white border-b-2 border-brand-cyan'
+                    ? 'bg-brand-gold/10 text-white border-b-2 border-brand-gold'
                     : 'text-gray-500 hover:text-gray-300 border-b border-brand-border'
                 }`}
               >
@@ -75,7 +75,7 @@ export default function Login() {
                   onChange={handleChange}
                   placeholder="John Doe"
                   required={tab === 'signup'}
-                  className="w-full bg-white/5 border border-brand-border rounded-xl px-4 py-3 text-white placeholder-gray-600 outline-none focus:border-brand-cyan/60 focus:bg-white/8 transition-all duration-200"
+                  className="w-full bg-white/5 border border-brand-border rounded-xl px-4 py-3 text-white placeholder-gray-600 outline-none focus:border-brand-gold/60 focus:bg-white/8 transition-all duration-200"
                 />
               </div>
             )}
@@ -92,7 +92,7 @@ export default function Login() {
                 onChange={handleChange}
                 placeholder="you@example.com"
                 required
-                className="w-full bg-white/5 border border-brand-border rounded-xl px-4 py-3 text-white placeholder-gray-600 outline-none focus:border-brand-cyan/60 focus:bg-white/8 transition-all duration-200"
+                className="w-full bg-white/5 border border-brand-border rounded-xl px-4 py-3 text-white placeholder-gray-600 outline-none focus:border-brand-gold/60 focus:bg-white/8 transition-all duration-200"
               />
             </div>
 
@@ -104,7 +104,7 @@ export default function Login() {
                 {tab === 'login' && (
                   <button
                     type="button"
-                    className="text-xs text-brand-cyan hover:text-cyan-400 transition-colors"
+                    className="text-xs text-brand-gold hover:text-brand-gold-hover transition-colors"
                   >
                     Forgot password?
                   </button>
@@ -118,7 +118,7 @@ export default function Login() {
                 onChange={handleChange}
                 placeholder="••••••••"
                 required
-                className="w-full bg-white/5 border border-brand-border rounded-xl px-4 py-3 text-white placeholder-gray-600 outline-none focus:border-brand-cyan/60 transition-all duration-200"
+                className="w-full bg-white/5 border border-brand-border rounded-xl px-4 py-3 text-white placeholder-gray-600 outline-none focus:border-brand-gold/60 transition-all duration-200"
               />
             </div>
 

@@ -77,7 +77,7 @@ export default function MovieDetails() {
             className="w-full h-full object-cover object-top"
           />
         ) : (
-          <div className="w-full h-full bg-gradient-to-br from-gray-900 via-purple-900/20 to-brand-bg" />
+          <div className="w-full h-full bg-gradient-to-br from-brand-card via-brand-surface to-brand-bg" />
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-brand-bg via-brand-bg/60 to-transparent" />
         <div className="absolute inset-0 bg-gradient-to-r from-brand-bg/80 to-transparent" />
@@ -123,7 +123,7 @@ export default function MovieDetails() {
             {/* Genres */}
             <div className="flex flex-wrap gap-2 mb-3 justify-center md:justify-start">
               {genres.map((g) => (
-                <span key={g} className="badge-red">{g}</span>
+                <span key={g} className="badge-gold">{g}</span>
               ))}
             </div>
 
@@ -134,10 +134,10 @@ export default function MovieDetails() {
             {/* Meta row */}
             <div className="flex flex-wrap items-center gap-4 mb-6 justify-center md:justify-start">
               <div className="flex items-center gap-1.5">
-                <svg className="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 24 24">
+                <svg className="w-5 h-5 text-[#D4AF37]" fill="currentColor" viewBox="0 0 24 24">
                   <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
                 </svg>
-                <span className="text-yellow-400 font-bold text-lg">{rating}</span>
+                <span className="text-[#D4AF37] font-bold text-lg">{rating}</span>
                 <span className="text-gray-500 text-sm">/10</span>
               </div>
               <span className="text-gray-400">{year}</span>
@@ -176,7 +176,7 @@ export default function MovieDetails() {
               <button
                 id="detail-watchlist-btn"
                 onClick={() => toggleWatchlist(movie)}
-                className={`btn-secondary text-base ${inWatchlist ? 'border-brand-cyan text-brand-cyan' : ''}`}
+                className={`btn-secondary text-base ${inWatchlist ? 'border-brand-gold text-brand-gold' : ''}`}
               >
                 {inWatchlist ? (
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -230,7 +230,7 @@ export default function MovieDetails() {
                   id={`similar-movie-${m.id}`}
                   className="group block"
                 >
-                  <div className="rounded-xl overflow-hidden bg-brand-card aspect-[2/3] shadow-lg mb-2 group-hover:ring-2 group-hover:ring-brand-cyan/60 transition-all duration-200">
+                  <div className="rounded-xl overflow-hidden bg-brand-card aspect-[2/3] shadow-lg mb-2 group-hover:ring-2 group-hover:ring-brand-gold/60 transition-all duration-200">
                     {m.poster_path ? (
                       <img
                         src={`https://image.tmdb.org/t/p/w500${m.poster_path}`}
@@ -243,7 +243,7 @@ export default function MovieDetails() {
                       </div>
                     )}
                   </div>
-                  <p className="text-white text-xs font-medium truncate group-hover:text-brand-cyan transition-colors">{m.title}</p>
+                  <p className="text-white text-xs font-medium truncate group-hover:text-brand-gold transition-colors">{m.title}</p>
                 </Link>
               ))}
             </div>
@@ -262,7 +262,7 @@ export default function MovieDetails() {
                   id={`recommended-movie-${m.id}`}
                   className="group block"
                 >
-                  <div className="rounded-xl overflow-hidden bg-brand-card aspect-[2/3] shadow-lg mb-2 group-hover:ring-2 group-hover:ring-brand-cyan/60 transition-all duration-200">
+                  <div className="rounded-xl overflow-hidden bg-brand-card aspect-[2/3] shadow-lg mb-2 group-hover:ring-2 group-hover:ring-brand-gold/60 transition-all duration-200">
                     {m.poster_path ? (
                       <img
                         src={`https://image.tmdb.org/t/p/w500${m.poster_path}`}
@@ -275,7 +275,7 @@ export default function MovieDetails() {
                       </div>
                     )}
                   </div>
-                  <p className="text-white text-xs font-medium truncate group-hover:text-brand-cyan transition-colors">{m.title}</p>
+                  <p className="text-white text-xs font-medium truncate group-hover:text-brand-gold transition-colors">{m.title}</p>
                 </Link>
               ))}
             </div>

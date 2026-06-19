@@ -41,7 +41,7 @@ export default function Navbar() {
   const navPill = (active) =>
     `px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 ${
       active
-        ? 'nav-pill-active text-brand-cyan'
+        ? 'nav-pill-active text-brand-gold'
         : 'text-brand-muted hover:text-brand-text hover:bg-brand-surface/50'
     }`
 
@@ -55,14 +55,14 @@ export default function Navbar() {
         <div className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <Link to="/" id="cineflow-logo" className="flex items-center gap-2.5 group select-none">
-              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-brand-cyan to-brand-purple flex items-center justify-center shadow-glow-cyan group-hover:scale-105 transition-transform duration-300">
+              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-brand-gold to-brand-gold-muted flex items-center justify-center shadow-glow-gold group-hover:scale-105 transition-transform duration-300">
                 <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
                   <path d="M3 3l4 4-4 4V3zm5 0h7v2h-7V3zm0 4h5v2h-5V7zm0 4h7v2h-7v-2z" fill="#0A0F1E" />
                 </svg>
               </div>
               <span className="text-xl font-black tracking-tight">
                 <span className="text-brand-text">Movie</span>
-                <span className="text-gradient-cyan">XD</span>
+                <span className="text-gradient-gold">XD</span>
               </span>
             </Link>
 
@@ -87,7 +87,7 @@ export default function Navbar() {
               <button
                 id="navbar-search-btn"
                 onClick={() => setSearchOpen(true)}
-                className="p-2.5 rounded-xl text-brand-muted hover:text-brand-cyan hover:bg-brand-surface/60 transition-all duration-300"
+                className="p-2.5 rounded-xl text-brand-muted hover:text-brand-gold-hover hover:bg-brand-surface/60 transition-all duration-300"
                 aria-label="Open search"
               >
                 <SearchIcon />
@@ -96,12 +96,12 @@ export default function Navbar() {
               <Link
                 to="/watchlist"
                 id="navbar-watchlist-btn"
-                className="relative p-2.5 rounded-xl text-brand-muted hover:text-brand-cyan hover:bg-brand-surface/60 transition-all duration-300"
+                className="relative p-2.5 rounded-xl text-brand-muted hover:text-brand-gold-hover hover:bg-brand-surface/60 transition-all duration-300"
                 aria-label="My Watchlist"
               >
                 <BookmarkIcon />
                 {watchlist.length > 0 && (
-                  <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-brand-cyan text-brand-bg text-[9px] font-bold rounded-full flex items-center justify-center">
+                  <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-brand-gold text-brand-bg text-[9px] font-bold rounded-full flex items-center justify-center">
                     {watchlist.length > 9 ? '9+' : watchlist.length}
                   </span>
                 )}
@@ -110,7 +110,7 @@ export default function Navbar() {
               <Link
                 to="/login"
                 id="navbar-profile-btn"
-                className="w-9 h-9 rounded-full bg-gradient-to-br from-brand-purple to-brand-cyan flex items-center justify-center text-xs font-bold text-brand-bg hover:shadow-glow-cyan transition-all duration-300"
+                className="w-9 h-9 rounded-full bg-gradient-to-br from-brand-gold-muted to-brand-gold flex items-center justify-center text-xs font-bold text-brand-bg hover:shadow-glow-gold transition-all duration-300"
                 aria-label="Profile"
               >
                 MX
@@ -153,7 +153,7 @@ export default function Navbar() {
                       onClick={() => setMobileOpen(false)}
                       className={`px-4 py-3 rounded-xl text-sm font-medium transition-all duration-300 ${
                         active
-                          ? 'text-brand-cyan bg-brand-surface/80 border-l-2 border-brand-cyan'
+                          ? 'text-brand-gold bg-brand-surface/80 border-l-2 border-brand-gold'
                           : 'text-brand-muted hover:text-brand-text hover:bg-brand-surface/40'
                       }`}
                     >
@@ -184,8 +184,8 @@ export default function Navbar() {
               onSubmit={handleSearch}
               className="w-full max-w-2xl relative"
             >
-              <div className="flex items-center glass rounded-2xl px-5 py-4 border border-brand-cyan/20 shadow-glow-cyan">
-                <SearchIcon className="text-brand-cyan mr-3 flex-shrink-0" />
+              <div className="flex items-center glass rounded-2xl px-5 py-4 border border-brand-gold/20 shadow-glow-gold">
+                <SearchIcon className="text-brand-gold mr-3 flex-shrink-0" />
                 <input
                   id="search-input-overlay"
                   type="text"
