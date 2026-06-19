@@ -1,15 +1,13 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useInView } from 'react-intersection-observer'
-import { getGenres, discoverMovies } from '../services/tmdb'
+import { discoverMovies } from '../services/tmdb'
 import { useDiscoverStore } from '../store/discoverStore'
-import GenreCard from '../components/GenreCard'
 import MovieCard from '../components/MovieCard'
 import DiscoverFilters from '../components/DiscoverFilters'
 import LoadingSpinner from '../components/LoadingSpinner'
 import SkeletonCard from '../components/SkeletonCard'
 
 export default function Discover() {
-  const [genres, setGenres] = useState([])
   const [movies, setMovies] = useState([])
   const [page, setPage] = useState(1)
   const [isLoading, setIsLoading] = useState(true)
@@ -21,19 +19,6 @@ export default function Discover() {
     threshold: 0,
     rootMargin: '400px',
   })
-
-  // Fetch Genres for navigation
-  useEffect(() => {
-    const fetchGenres = async () => {
-      try {
-        const data = await getGenres()
-        setGenres(data.genres || [])
-      } catch (err) {
-        console.error('Failed to load genres', err)
-      }
-    }
-    fetchGenres()
-  }, [])
 
   // Initial Fetch based on filters
   useEffect(() => {
@@ -97,20 +82,6 @@ export default function Discover() {
   return (
     <div className="min-h-screen bg-brand-bg pt-24 pb-16 px-4 sm:px-6 lg:px-8 max-w-screen-xl mx-auto">
       
-      {/* 1. Genre Navigation */}
-      <div className="mb-16">
-        <h1 className="text-3xl sm:text-4xl font-black text-brand-text mb-2">Explore Genres</h1>
-        <p className="text-brand-muted mb-8">Discover movies perfectly suited to your mood.</p>
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
-          {genres.length > 0 ? (
-            genres.map(genre => <GenreCard key={genre.id} genre={genre} />)
-          ) : (
-            Array.from({ length: 12 }).map((_, i) => (
-              <div key={i} className="h-32 rounded-2xl bg-gray-800 animate-pulse" />
-            ))
-          )}
-        </div>
-      </div>
 
       {/* 2. Smart Discovery */}
       <DiscoverFilters />
