@@ -1,5 +1,5 @@
 import { useParams, Link } from 'react-router-dom'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useWatchlist } from '../context/WatchlistContext'
 import { getMovieDetails } from '../services/tmdb'
 import LoadingSpinner from '../components/LoadingSpinner'
@@ -7,10 +7,16 @@ import LoadingSpinner from '../components/LoadingSpinner'
 export default function MovieDetails() {
   const { id } = useParams()
   const { isInWatchlist, toggleWatchlist } = useWatchlist()
+  
   const [movie, setMovie] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState(null)
   const [imgError, setImgError] = useState(false)
+  const [isTrailerOpen, setIsTrailerOpen] = useState(false)
+
+  const castRef = useRef(null)
+  const similarRef = useRef(null)
+  const recommendationsRef = useRef(null)
 
   useEffect(() => {
     const fetchDetail = async () => {
@@ -31,6 +37,25 @@ export default function MovieDetails() {
     // Reset window scroll on mount/id change
     window.scrollTo(0, 0)
   }, [id])
+
+  // Handle ESC key press to close trailer modal and handle scroll locking
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') {
+        setIsTrailerOpen(false)
+      }
+    }
+    if (isTrailerOpen) {
+      window.addEventListener('keydown', handleKeyDown)
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = 'unset'
+    }
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown)
+      document.body.style.overflow = 'unset'
+    }
+  }, [isTrailerOpen])
 
   if (isLoading) {
     return (
@@ -55,8 +80,16 @@ export default function MovieDetails() {
   const rating = movie.vote_average > 0 ? movie.vote_average.toFixed(1) : 'N/A'
   const genres = (movie.genres || []).map(g => g.name)
 
-  const related = (movie.similar?.results || []).slice(0, 6)
+  const related = (movie.similar?.results || []).slice(0, 12)
+  const recommendations = (movie.recommendations?.results || []).slice(0, 12)
+  const cast = (movie.credits?.cast || []).slice(0, 12)
   
+  // Find trailer key
+  const trailer = movie.videos?.results?.find(
+    (video) => video.site === 'YouTube' && video.type === 'Trailer'
+  ) || movie.videos?.results?.find((video) => video.site === 'YouTube')
+  const trailerKey = trailer?.key
+
   const backdropSrc = movie.backdrop_path 
     ? `https://image.tmdb.org/t/p/original${movie.backdrop_path}` 
     : null
@@ -65,10 +98,16 @@ export default function MovieDetails() {
     ? `https://image.tmdb.org/t/p/w500${movie.poster_path}` 
     : backdropSrc
 
+  const scrollContainer = (ref, dir) => {
+    if (!ref.current) return
+    const amount = ref.current.offsetWidth * 0.75
+    ref.current.scrollBy({ left: dir === 'left' ? -amount : amount, behavior: 'smooth' })
+  }
+
   return (
-    <div className="min-h-screen bg-brand-bg">
-      {/* Backdrop */}
-      <div className="relative h-[50vh] md:h-[60vh] overflow-hidden">
+    <div className="min-h-screen bg-brand-bg relative">
+      {/* Backdrop Section */}
+      <div className="relative h-[50vh] md:h-[65vh] overflow-hidden">
         {backdropSrc && !imgError ? (
           <img
             src={backdropSrc}
@@ -86,7 +125,7 @@ export default function MovieDetails() {
         <Link
           to="/"
           id="movie-detail-back-btn"
-          className="absolute top-20 left-4 sm:left-8 flex items-center gap-2 text-gray-300 hover:text-white transition-colors text-sm font-medium"
+          className="absolute top-24 left-4 sm:left-8 flex items-center gap-2 text-gray-300 hover:text-white transition-colors text-sm font-medium z-20 bg-brand-bg/60 px-3 py-1.5 rounded-full border border-white/10 backdrop-blur-sm"
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -95,11 +134,11 @@ export default function MovieDetails() {
         </Link>
       </div>
 
-      {/* Details */}
-      <div className="relative z-10 -mt-40 md:-mt-52 max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 pb-20">
-        <div className="flex flex-col md:flex-row gap-8">
-          {/* Poster */}
-          <div className="flex-shrink-0 w-40 sm:w-52 mx-auto md:mx-0">
+      {/* Details Container */}
+      <div className="relative z-10 -mt-40 md:-mt-56 max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 pb-20">
+        <div className="flex flex-col md:flex-row gap-8 items-start">
+          {/* Poster Card */}
+          <div className="flex-shrink-0 w-44 sm:w-56 mx-auto md:mx-0">
             <div className="rounded-2xl overflow-hidden shadow-2xl ring-2 ring-white/10 aspect-[2/3] bg-brand-card">
               {posterSrc && !imgError ? (
                 <img
@@ -118,10 +157,10 @@ export default function MovieDetails() {
             </div>
           </div>
 
-          {/* Info */}
+          {/* Info Details */}
           <div className="flex-1 text-center md:text-left">
-            {/* Genres */}
-            <div className="flex flex-wrap gap-2 mb-3 justify-center md:justify-start">
+            {/* Genres Badges */}
+            <div className="flex flex-wrap gap-2 mb-4 justify-center md:justify-start">
               {genres.map((g) => (
                 <span key={g} className="badge-gold">{g}</span>
               ))}
@@ -131,7 +170,7 @@ export default function MovieDetails() {
               {movie.title}
             </h1>
 
-            {/* Meta row */}
+            {/* Meta statistics row */}
             <div className="flex flex-wrap items-center gap-4 mb-6 justify-center md:justify-start">
               <div className="flex items-center gap-1.5">
                 <svg className="w-5 h-5 text-[#D4AF37]" fill="currentColor" viewBox="0 0 24 24">
@@ -140,148 +179,350 @@ export default function MovieDetails() {
                 <span className="text-[#D4AF37] font-bold text-lg">{rating}</span>
                 <span className="text-gray-500 text-sm">/10</span>
               </div>
-              <span className="text-gray-400">{year}</span>
+              <span className="text-gray-400 font-medium">{year}</span>
               {movie.runtime > 0 && (
-                <span className="text-gray-400">{movie.runtime} min</span>
+                <span className="text-gray-400 font-medium">{movie.runtime} min</span>
               )}
               <span className="badge-gold">4K</span>
               <span className="badge-gold">HDR</span>
             </div>
 
-            {/* Overview */}
+            {/* Overview / Tagline */}
+            {movie.tagline && (
+              <p className="text-[#D4AF37]/90 text-sm italic font-medium mb-3 tracking-wide">
+                "{movie.tagline}"
+              </p>
+            )}
             <p className="text-gray-300 text-base md:text-lg leading-relaxed mb-8 max-w-2xl mx-auto md:mx-0">
               {movie.overview || 'No description available for this title.'}
             </p>
 
-            {/* Actions */}
+            {/* Action Buttons */}
             <div className="flex flex-wrap gap-3 justify-center md:justify-start">
-              <button
-                id="detail-play-btn"
-                className="btn-primary text-base"
-              >
-                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M8 5v14l11-7z" />
-                </svg>
-                Play
-              </button>
+              {trailerKey && (
+                <button
+                  id="detail-play-btn"
+                  onClick={() => setIsTrailerOpen(true)}
+                  className="btn-primary text-base"
+                >
+                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M8 5v14l11-7z" />
+                  </svg>
+                  Play
+                </button>
+              )}
               <button
                 id="detail-trailer-btn"
-                className="btn-secondary text-base"
+                onClick={() => {
+                  if (trailerKey) {
+                    setIsTrailerOpen(true)
+                  }
+                }}
+                disabled={!trailerKey}
+                className={`btn-secondary text-base ${!trailerKey ? 'opacity-50 cursor-not-allowed border-gray-600 text-gray-500 hover:bg-transparent hover:transform-none hover:shadow-none' : ''}`}
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.069A1 1 0 0121 8.845v6.31a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
                 </svg>
-                Trailer
+                {trailerKey ? 'Watch Trailer' : 'Trailer N/A'}
               </button>
               <button
                 id="detail-watchlist-btn"
                 onClick={() => toggleWatchlist(movie)}
-                className={`btn-secondary text-base ${inWatchlist ? 'border-brand-gold text-brand-gold' : ''}`}
+                className={`btn-secondary text-base ${inWatchlist ? 'border-brand-gold text-brand-gold bg-brand-gold/10' : ''}`}
               >
                 {inWatchlist ? (
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
+                  <>
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                    </svg>
+                    In My List
+                  </>
                 ) : (
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
-                  </svg>
+                  <>
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
+                    </svg>
+                    Add to List
+                  </>
                 )}
-                {inWatchlist ? 'In My List' : 'Add to List'}
-              </button>
-              <button
-                id="detail-share-btn"
-                className="btn-secondary text-base"
-              >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
-                </svg>
-                Share
               </button>
             </div>
           </div>
         </div>
 
-        {/* Stats */}
-        <div className="mt-12 grid grid-cols-2 sm:grid-cols-4 gap-4">
+        {/* Statistics Grid */}
+        <div className="mt-16 grid grid-cols-2 sm:grid-cols-4 gap-4">
           {[
-            { label: 'Rating', value: `${rating} / 10`, icon: '⭐' },
-            { label: 'Year', value: year, icon: '📅' },
+            { label: 'Rating', value: rating !== 'N/A' ? `${rating} / 10` : 'N/A', icon: '⭐' },
+            { label: 'Release Year', value: year, icon: '📅' },
             { label: 'Runtime', value: movie.runtime ? `${movie.runtime} min` : 'N/A', icon: '⏱️' },
-            { label: 'Status', value: movie.status || 'Released', icon: '🎬' },
+            { label: 'Popularity', value: movie.popularity ? Math.round(movie.popularity).toLocaleString() : 'N/A', icon: '🔥' },
           ].map(({ label, value, icon }) => (
-            <div key={label} className="glass rounded-xl p-4 border border-brand-border text-center">
+            <div key={label} className="glass rounded-xl p-4 border border-brand-border text-center shadow-card hover:border-[#D4AF37]/35 transition-all duration-300">
               <div className="text-2xl mb-1">{icon}</div>
-              <div className="text-white font-semibold">{value}</div>
-              <div className="text-gray-500 text-xs mt-0.5">{label}</div>
+              <div className="text-white font-bold text-lg">{value}</div>
+              <div className="text-gray-400 text-xs mt-0.5 font-medium">{label}</div>
             </div>
           ))}
         </div>
 
-        {/* Related Movies (Similar) */}
-        {related.length > 0 && (
+        {/* Cast Section */}
+        {cast.length > 0 && (
           <div className="mt-16">
-            <h2 className="text-2xl font-bold text-white mb-6">Similar Movies</h2>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
-              {related.map((m) => (
-                <Link
-                  key={m.id}
-                  to={`/movie/${m.id}`}
-                  id={`similar-movie-${m.id}`}
-                  className="group block"
-                >
-                  <div className="rounded-xl overflow-hidden bg-brand-card aspect-[2/3] shadow-lg mb-2 group-hover:ring-2 group-hover:ring-brand-gold/60 transition-all duration-200">
-                    {m.poster_path ? (
-                      <img
-                        src={`https://image.tmdb.org/t/p/w500${m.poster_path}`}
-                        alt={m.title}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center bg-brand-card">
-                        <span className="text-gray-600 text-xs text-center px-2">{m.title}</span>
-                      </div>
-                    )}
+            <h2 className="text-2xl font-bold text-white mb-6 text-gradient-gold inline-block">
+              Cast & Crew
+            </h2>
+            <div className="relative group/cast">
+              {/* Scroll buttons for cast */}
+              <button
+                onClick={() => scrollContainer(castRef, 'left')}
+                aria-label="Scroll left"
+                className="absolute left-0 top-0 bottom-8 z-10 w-12 bg-gradient-to-r from-brand-bg to-transparent flex items-center justify-start pl-1 opacity-0 group-hover/cast:opacity-100 transition-opacity duration-300"
+              >
+                <div className="w-8 h-8 rounded-full glass flex items-center justify-center border border-white/10 hover:bg-brand-gold/80 hover:border-brand-gold hover:shadow-glow-gold transition-all duration-200">
+                  <svg className="w-4 h-4 text-brand-text" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" />
+                  </svg>
+                </div>
+              </button>
+              <button
+                onClick={() => scrollContainer(castRef, 'right')}
+                aria-label="Scroll right"
+                className="absolute right-0 top-0 bottom-8 z-10 w-12 bg-gradient-to-l from-brand-bg to-transparent flex items-center justify-end pr-1 opacity-0 group-hover/cast:opacity-100 transition-opacity duration-300"
+              >
+                <div className="w-8 h-8 rounded-full glass flex items-center justify-center border border-white/10 hover:bg-brand-gold/80 hover:border-brand-gold hover:shadow-glow-gold transition-all duration-200">
+                  <svg className="w-4 h-4 text-brand-text" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
+                  </svg>
+                </div>
+              </button>
+
+              <div
+                ref={castRef}
+                className="scroll-row hide-scrollbar flex gap-4 overflow-x-auto pb-4"
+              >
+                {cast.map((actor) => (
+                  <div key={actor.id} className="w-28 sm:w-36 flex-shrink-0 text-center group">
+                    <div className="rounded-xl overflow-hidden bg-brand-card aspect-[3/4] shadow-lg mb-2 border border-white/5 group-hover:border-brand-gold/40 transition-all duration-300">
+                      {actor.profile_path ? (
+                        <img
+                          src={`https://image.tmdb.org/t/p/w185${actor.profile_path}`}
+                          alt={actor.name}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                          loading="lazy"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex flex-col items-center justify-center bg-brand-card">
+                          <svg className="w-10 h-10 text-brand-muted/40" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
+                          </svg>
+                        </div>
+                      )}
+                    </div>
+                    <p className="text-white text-xs font-semibold truncate px-1 group-hover:text-brand-gold transition-colors">{actor.name}</p>
+                    <p className="text-brand-muted text-[10px] truncate px-1 mt-0.5">{actor.character}</p>
                   </div>
-                  <p className="text-white text-xs font-medium truncate group-hover:text-brand-gold transition-colors">{m.title}</p>
-                </Link>
-              ))}
+                ))}
+              </div>
             </div>
           </div>
         )}
 
-        {/* Recommendations */}
-        {movie.recommendations?.results?.length > 0 && (
-          <div className="mt-12">
-            <h2 className="text-2xl font-bold text-white mb-6">Recommendations</h2>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
-              {movie.recommendations.results.slice(0, 6).map((m) => (
-                <Link
-                  key={m.id}
-                  to={`/movie/${m.id}`}
-                  id={`recommended-movie-${m.id}`}
-                  className="group block"
-                >
-                  <div className="rounded-xl overflow-hidden bg-brand-card aspect-[2/3] shadow-lg mb-2 group-hover:ring-2 group-hover:ring-brand-gold/60 transition-all duration-200">
-                    {m.poster_path ? (
-                      <img
-                        src={`https://image.tmdb.org/t/p/w500${m.poster_path}`}
-                        alt={m.title}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center bg-brand-card">
-                        <span className="text-gray-600 text-xs text-center px-2">{m.title}</span>
+        {/* Similar Movies Section */}
+        {related.length > 0 && (
+          <div className="mt-16">
+            <h2 className="text-2xl font-bold text-white mb-6 text-gradient-gold inline-block">
+              Similar Movies
+            </h2>
+            <div className="relative group/similar">
+              <button
+                onClick={() => scrollContainer(similarRef, 'left')}
+                aria-label="Scroll left"
+                className="absolute left-0 top-0 bottom-8 z-10 w-12 bg-gradient-to-r from-brand-bg to-transparent flex items-center justify-start pl-1 opacity-0 group-hover/similar:opacity-100 transition-opacity duration-300"
+              >
+                <div className="w-8 h-8 rounded-full glass flex items-center justify-center border border-white/10 hover:bg-brand-gold/80 hover:border-brand-gold hover:shadow-glow-gold transition-all duration-200">
+                  <svg className="w-4 h-4 text-brand-text" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" />
+                  </svg>
+                </div>
+              </button>
+              <button
+                onClick={() => scrollContainer(similarRef, 'right')}
+                aria-label="Scroll right"
+                className="absolute right-0 top-0 bottom-8 z-10 w-12 bg-gradient-to-l from-brand-bg to-transparent flex items-center justify-end pr-1 opacity-0 group-hover/similar:opacity-100 transition-opacity duration-300"
+              >
+                <div className="w-8 h-8 rounded-full glass flex items-center justify-center border border-white/10 hover:bg-brand-gold/80 hover:border-brand-gold hover:shadow-glow-gold transition-all duration-200">
+                  <svg className="w-4 h-4 text-brand-text" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
+                  </svg>
+                </div>
+              </button>
+
+              <div
+                ref={similarRef}
+                className="scroll-row hide-scrollbar flex gap-4 overflow-x-auto pb-4"
+              >
+                {related.map((m) => {
+                  const rating = m.vote_average > 0 ? m.vote_average.toFixed(1) : null
+                  const mYear = m.release_date ? new Date(m.release_date).getFullYear() : 'TBA'
+                  return (
+                    <Link
+                      key={m.id}
+                      to={`/movie/${m.id}`}
+                      id={`similar-movie-${m.id}`}
+                      className="w-36 sm:w-44 flex-shrink-0 group block"
+                    >
+                      <div className="relative rounded-xl overflow-hidden bg-brand-card aspect-[2/3] shadow-lg mb-2 border border-transparent group-hover:border-[#D4AF37]/50 transition-all duration-300 poster-glow ring-1 ring-white/[0.06]">
+                        {m.poster_path ? (
+                          <img
+                            src={`https://image.tmdb.org/t/p/w342${m.poster_path}`}
+                            alt={m.title}
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                            loading="lazy"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex flex-col items-center justify-center bg-brand-card p-3 text-center">
+                            <svg className="w-8 h-8 text-brand-muted mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 4v16M17 4v16M3 8h4m10 0h4M3 12h18M3 16h4m10 0h4M4 20h16a1 1 0 001-1V5a1 1 0 00-1-1H4a1 1 0 00-1 1v14a1 1 0 001 1z" />
+                            </svg>
+                            <span className="text-brand-muted text-xs leading-tight">{m.title}</span>
+                          </div>
+                        )}
+                        <div className="absolute inset-0 bg-card-gradient opacity-0 group-hover:opacity-100 transition-opacity duration-400" />
+                        {rating && (
+                          <div className="absolute top-3 left-3 flex items-center gap-1 bg-[#121212]/95 border border-[#D4AF37]/40 rounded-lg px-2 py-1 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-1 group-hover:translate-y-0">
+                            <svg className="w-3 h-3 text-[#D4AF37]" fill="currentColor" viewBox="0 0 24 24">
+                              <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                            </svg>
+                            <span className="text-[#D4AF37] text-[11px] font-semibold">{rating}</span>
+                          </div>
+                        )}
                       </div>
-                    )}
-                  </div>
-                  <p className="text-white text-xs font-medium truncate group-hover:text-brand-gold transition-colors">{m.title}</p>
-                </Link>
-              ))}
+                      <p className="text-brand-text text-sm font-semibold truncate group-hover:text-brand-gold transition-colors">{m.title}</p>
+                      <p className="text-brand-muted text-xs mt-0.5">{mYear}</p>
+                    </Link>
+                  )
+                })}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Recommendations Section */}
+        {recommendations.length > 0 && (
+          <div className="mt-16">
+            <h2 className="text-2xl font-bold text-white mb-6 text-gradient-gold inline-block">
+              Recommendations
+            </h2>
+            <div className="relative group/rec">
+              <button
+                onClick={() => scrollContainer(recommendationsRef, 'left')}
+                aria-label="Scroll left"
+                className="absolute left-0 top-0 bottom-8 z-10 w-12 bg-gradient-to-r from-brand-bg to-transparent flex items-center justify-start pl-1 opacity-0 group-hover/rec:opacity-100 transition-opacity duration-300"
+              >
+                <div className="w-8 h-8 rounded-full glass flex items-center justify-center border border-white/10 hover:bg-brand-gold/80 hover:border-brand-gold hover:shadow-glow-gold transition-all duration-200">
+                  <svg className="w-4 h-4 text-brand-text" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" />
+                  </svg>
+                </div>
+              </button>
+              <button
+                onClick={() => scrollContainer(recommendationsRef, 'right')}
+                aria-label="Scroll right"
+                className="absolute right-0 top-0 bottom-8 z-10 w-12 bg-gradient-to-l from-brand-bg to-transparent flex items-center justify-end pr-1 opacity-0 group-hover/rec:opacity-100 transition-opacity duration-300"
+              >
+                <div className="w-8 h-8 rounded-full glass flex items-center justify-center border border-white/10 hover:bg-brand-gold/80 hover:border-brand-gold hover:shadow-glow-gold transition-all duration-200">
+                  <svg className="w-4 h-4 text-brand-text" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
+                  </svg>
+                </div>
+              </button>
+
+              <div
+                ref={recommendationsRef}
+                className="scroll-row hide-scrollbar flex gap-4 overflow-x-auto pb-4"
+              >
+                {recommendations.map((m) => {
+                  const rating = m.vote_average > 0 ? m.vote_average.toFixed(1) : null
+                  const mYear = m.release_date ? new Date(m.release_date).getFullYear() : 'TBA'
+                  return (
+                    <Link
+                      key={m.id}
+                      to={`/movie/${m.id}`}
+                      id={`recommended-movie-${m.id}`}
+                      className="w-36 sm:w-44 flex-shrink-0 group block"
+                    >
+                      <div className="relative rounded-xl overflow-hidden bg-brand-card aspect-[2/3] shadow-lg mb-2 border border-transparent group-hover:border-[#D4AF37]/50 transition-all duration-300 poster-glow ring-1 ring-white/[0.06]">
+                        {m.poster_path ? (
+                          <img
+                            src={`https://image.tmdb.org/t/p/w342${m.poster_path}`}
+                            alt={m.title}
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                            loading="lazy"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex flex-col items-center justify-center bg-brand-card p-3 text-center">
+                            <svg className="w-8 h-8 text-brand-muted mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 4v16M17 4v16M3 8h4m10 0h4M3 12h18M3 16h4m10 0h4M4 20h16a1 1 0 001-1V5a1 1 0 00-1-1H4a1 1 0 00-1 1v14a1 1 0 001 1z" />
+                            </svg>
+                            <span className="text-brand-muted text-xs leading-tight">{m.title}</span>
+                          </div>
+                        )}
+                        <div className="absolute inset-0 bg-card-gradient opacity-0 group-hover:opacity-100 transition-opacity duration-400" />
+                        {rating && (
+                          <div className="absolute top-3 left-3 flex items-center gap-1 bg-[#121212]/95 border border-[#D4AF37]/40 rounded-lg px-2 py-1 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-1 group-hover:translate-y-0">
+                            <svg className="w-3 h-3 text-[#D4AF37]" fill="currentColor" viewBox="0 0 24 24">
+                              <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                            </svg>
+                            <span className="text-[#D4AF37] text-[11px] font-semibold">{rating}</span>
+                          </div>
+                        )}
+                      </div>
+                      <p className="text-brand-text text-sm font-semibold truncate group-hover:text-brand-gold transition-colors">{m.title}</p>
+                      <p className="text-brand-muted text-xs mt-0.5">{mYear}</p>
+                    </Link>
+                  )
+                })}
+              </div>
             </div>
           </div>
         )}
       </div>
+
+      {/* Trailer Modal (YouTube Embed with Backdrop Blur) */}
+      {isTrailerOpen && trailerKey && (
+        <div 
+          onClick={() => setIsTrailerOpen(false)}
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-md p-4 animate-fade-in cursor-pointer"
+        >
+          <div 
+            onClick={(e) => e.stopPropagation()} // Prevent closing when clicking inside content
+            className="relative w-full max-w-4xl bg-brand-surface border border-brand-gold/20 rounded-2xl overflow-hidden shadow-glow-gold-lg animate-scale-up cursor-default"
+          >
+            {/* Close button */}
+            <button
+              onClick={() => setIsTrailerOpen(false)}
+              className="absolute top-4 right-4 z-10 w-10 h-10 rounded-full bg-brand-bg/85 border border-[#D4AF37]/35 hover:border-[#D4AF37] text-[#D4AF37] hover:text-[#E6C55A] flex items-center justify-center transition-all duration-200 shadow-lg hover:bg-brand-gold/10"
+              aria-label="Close trailer"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+            {/* Youtube Embed */}
+            <div className="aspect-video w-full">
+              <iframe
+                src={`https://www.youtube.com/embed/${trailerKey}?autoplay=1&rel=0`}
+                title={`${movie.title} Trailer`}
+                className="w-full h-full border-none"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+              ></iframe>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
