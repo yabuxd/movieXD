@@ -13,7 +13,7 @@ const GENRE_MAP = {
 
 export default function MovieCard({ movie, variant = 'default' }) {
   const { isInWatchlist, toggleWatchlist } = useWatchlist()
-  const { isLoggedIn } = useAuth()
+  const { isAuthenticated } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
   const inWatchlist = isInWatchlist(movie.id)
@@ -94,7 +94,7 @@ export default function MovieCard({ movie, variant = 'default' }) {
             id={`watchlist-toggle-${movie.id}`}
             onClick={(e) => {
               e.preventDefault()
-              if (!isLoggedIn) {
+              if (!isAuthenticated) {
                 navigate('/login', { state: { from: location } })
                 return
               }

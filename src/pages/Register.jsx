@@ -6,26 +6,62 @@ export default function Register() {
   const navigate = useNavigate()
   const location = useLocation()
   const { register, loading, error, setError } = useAuth()
-  const [form, setForm] = useState({ email: '', password: '', confirmPassword: '', name: '' })
-  const [localError, setLocalError] = useState('')
+  const [form, setForm] = useState({ email: '', password: '', confirmPassword: '' })
+  const [fieldErrors, setFieldErrors] = useState({ email: '', password: '', confirmPassword: '' })
 
   const from = location.state?.from?.pathname || '/'
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value })
     setError(null)
-    setLocalError('')
+    setFieldErrors({ ...fieldErrors, [e.target.name]: '' })
+  }
+
+  const validateForm = () => {
+    const errors = { email: '', password: '', confirmPassword: '' }
+    let isValid = true
+
+    // Email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!form.email) {
+      errors.email = 'Email is required'
+      isValid = false
+    } else if (!emailRegex.test(form.email)) {
+      errors.email = 'Invalid email format'
+      isValid = false
+    }
+
+    // Password validation
+    if (!form.password) {
+      errors.password = 'Password is required'
+      isValid = false
+    } else if (form.password.length < 8) {
+      errors.password = 'Password must be at least 8 characters'
+      isValid = false
+    } else if (!/\d/.test(form.password)) {
+      errors.password = 'Password must contain at least 1 number'
+      isValid = false
+    }
+
+    // Confirm password validation
+    if (!form.confirmPassword) {
+      errors.confirmPassword = 'Confirm password is required'
+      isValid = false
+    } else if (form.password !== form.confirmPassword) {
+      errors.confirmPassword = 'Passwords do not match'
+      isValid = false
+    }
+
+    setFieldErrors(errors)
+    return isValid
   }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    if (form.password !== form.confirmPassword) {
-      setLocalError('Passwords do not match')
-      return
-    }
+    if (!validateForm()) return
 
     try {
-      await register(form.email, form.password, form.name)
+      await register(form.email, form.password)
       navigate(from, { replace: true })
     } catch (err) {
       // Error handled by AuthContext
@@ -71,30 +107,15 @@ export default function Register() {
           </div>
 
           <form onSubmit={handleSubmit} className="p-6 sm:p-8 space-y-5">
-            {/* Display error message */}
-            {(error || localError) && (
+            {/* Display general auth error */}
+            {error && (
               <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 text-sm flex items-center gap-2">
                 <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                 </svg>
-                <span>{localError || error}</span>
+                <span>{error}</span>
               </div>
             )}
-
-            <div>
-              <label htmlFor="reg-name" className="block text-sm font-medium text-gray-400 mb-1.5">
-                Full Name (Optional)
-              </label>
-              <input
-                id="reg-name"
-                type="text"
-                name="name"
-                value={form.name}
-                onChange={handleChange}
-                placeholder="John Doe"
-                className="w-full bg-white/5 border border-brand-border rounded-xl px-4 py-3 text-white placeholder-gray-600 outline-none focus:border-brand-gold/60 focus:bg-white/8 transition-all duration-200"
-              />
-            </div>
 
             <div>
               <label htmlFor="reg-email" className="block text-sm font-medium text-gray-400 mb-1.5">
@@ -108,8 +129,13 @@ export default function Register() {
                 onChange={handleChange}
                 placeholder="you@example.com"
                 required
-                className="w-full bg-white/5 border border-brand-border rounded-xl px-4 py-3 text-white placeholder-gray-600 outline-none focus:border-brand-gold/60 focus:bg-white/8 transition-all duration-200"
+                className={`w-full bg-white/5 border rounded-xl px-4 py-3 text-white placeholder-gray-600 outline-none focus:bg-white/8 transition-all duration-200 ${
+                  fieldErrors.email ? 'border-red-500 focus:border-red-500' : 'border-brand-border focus:border-brand-gold/60'
+                }`}
               />
+              {fieldErrors.email && (
+                <p className="text-red-500 text-xs mt-1">{fieldErrors.email}</p>
+              )}
             </div>
 
             <div>
@@ -124,8 +150,13 @@ export default function Register() {
                 onChange={handleChange}
                 placeholder="••••••••"
                 required
-                className="w-full bg-white/5 border border-brand-border rounded-xl px-4 py-3 text-white placeholder-gray-600 outline-none focus:border-brand-gold/60 focus:bg-white/8 transition-all duration-200"
+                className={`w-full bg-white/5 border rounded-xl px-4 py-3 text-white placeholder-gray-600 outline-none focus:bg-white/8 transition-all duration-200 ${
+                  fieldErrors.password ? 'border-red-500 focus:border-red-500' : 'border-brand-border focus:border-brand-gold/60'
+                }`}
               />
+              {fieldErrors.password && (
+                <p className="text-red-500 text-xs mt-1">{fieldErrors.password}</p>
+              )}
             </div>
 
             <div>
@@ -140,8 +171,13 @@ export default function Register() {
                 onChange={handleChange}
                 placeholder="••••••••"
                 required
-                className="w-full bg-white/5 border border-brand-border rounded-xl px-4 py-3 text-white placeholder-gray-600 outline-none focus:border-brand-gold/60 focus:bg-white/8 transition-all duration-200"
+                className={`w-full bg-white/5 border rounded-xl px-4 py-3 text-white placeholder-gray-600 outline-none focus:bg-white/8 transition-all duration-200 ${
+                  fieldErrors.confirmPassword ? 'border-red-500 focus:border-red-500' : 'border-brand-border focus:border-brand-gold/60'
+                }`}
               />
+              {fieldErrors.confirmPassword && (
+                <p className="text-red-500 text-xs mt-1">{fieldErrors.confirmPassword}</p>
+              )}
             </div>
 
             <button

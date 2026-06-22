@@ -3,25 +3,25 @@ import { createContext, useContext, useState, useEffect } from 'react'
 const AuthContext = createContext(null)
 
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(() => {
-    const savedUser = localStorage.getItem('moviexd_current_user')
-    return savedUser ? JSON.parse(savedUser) : null
+  const [currentUser, setCurrentUser] = useState(() => {
+    const saved = localStorage.getItem('auth_user')
+    return saved ? JSON.parse(saved) : null
   })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
 
   // Seed a default user for testing if no users exist
   useEffect(() => {
-    const registeredUsers = localStorage.getItem('moviexd_users')
+    const registeredUsers = localStorage.getItem('auth_users')
     if (!registeredUsers) {
       const defaultUsers = [
         {
+          id: 'demo-user-id',
           email: 'user@example.com',
-          password: 'password123',
-          name: 'Demo User',
+          passwordHash: 'password123',
         }
       ]
-      localStorage.setItem('moviexd_users', JSON.stringify(defaultUsers))
+      localStorage.setItem('auth_users', JSON.stringify(defaultUsers))
     }
   }, [])
 
@@ -31,17 +31,21 @@ export function AuthProvider({ children }) {
     return new Promise((resolve, reject) => {
       setTimeout(() => {
         try {
-          const registeredUsers = JSON.parse(localStorage.getItem('moviexd_users') || '[]')
+          const registeredUsers = JSON.parse(localStorage.getItem('auth_users') || '[]')
           const foundUser = registeredUsers.find(
-            (u) => u.email.toLowerCase() === email.toLowerCase() && u.password === password
+            (u) => u.email.toLowerCase() === email.toLowerCase() && u.passwordHash === password
           )
 
           if (foundUser) {
-            const loggedInUser = { email: foundUser.email, name: foundUser.name || 'User' }
-            setUser(loggedInUser)
-            localStorage.setItem('moviexd_current_user', JSON.stringify(loggedInUser))
+            const userObj = {
+              id: foundUser.id,
+              email: foundUser.email,
+              username: foundUser.email.split('@')[0],
+            }
+            setCurrentUser(userObj)
+            localStorage.setItem('auth_user', JSON.stringify(userObj))
             setLoading(false)
-            resolve(loggedInUser)
+            resolve(userObj)
           } else {
             const err = new Error('Invalid email or password')
             setError(err.message)
@@ -53,17 +57,17 @@ export function AuthProvider({ children }) {
           setLoading(false)
           reject(err)
         }
-      }, 1000)
+      }, 500)
     })
   }
 
-  const register = (email, password, name) => {
+  const register = (email, password) => {
     setLoading(true)
     setError(null)
     return new Promise((resolve, reject) => {
       setTimeout(() => {
         try {
-          const registeredUsers = JSON.parse(localStorage.getItem('moviexd_users') || '[]')
+          const registeredUsers = JSON.parse(localStorage.getItem('auth_users') || '[]')
           const exists = registeredUsers.some(
             (u) => u.email.toLowerCase() === email.toLowerCase()
           )
@@ -74,37 +78,47 @@ export function AuthProvider({ children }) {
             setLoading(false)
             reject(err)
           } else {
-            const newUser = { email, password, name: name || 'User' }
+            const newUser = {
+              id: Date.now().toString(),
+              email: email.toLowerCase(),
+              passwordHash: password,
+            }
             registeredUsers.push(newUser)
-            localStorage.setItem('moviexd_users', JSON.stringify(registeredUsers))
+            localStorage.setItem('auth_users', JSON.stringify(registeredUsers))
 
             // Auto-login the registered user
-            const loggedInUser = { email: newUser.email, name: newUser.name }
-            setUser(loggedInUser)
-            localStorage.setItem('moviexd_current_user', JSON.stringify(loggedInUser))
+            const userObj = {
+              id: newUser.id,
+              email: newUser.email,
+              username: newUser.email.split('@')[0],
+            }
+            setCurrentUser(userObj)
+            localStorage.setItem('auth_user', JSON.stringify(userObj))
 
             setLoading(false)
-            resolve(loggedInUser)
+            resolve(userObj)
           }
         } catch (err) {
           setError('A registration error occurred')
           setLoading(false)
           reject(err)
         }
-      }, 1000)
+      }, 500)
     })
   }
 
   const logout = () => {
-    setUser(null)
-    localStorage.removeItem('moviexd_current_user')
+    setCurrentUser(null)
+    localStorage.removeItem('auth_user')
+    // Redirect to login page
+    window.location.href = '/login'
   }
 
   return (
     <AuthContext.Provider
       value={{
-        user,
-        isLoggedIn: !!user,
+        currentUser,
+        isAuthenticated: !!currentUser,
         loading,
         error,
         login,

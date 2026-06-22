@@ -8,7 +8,7 @@ import LoadingSpinner from '../components/LoadingSpinner'
 export default function MovieDetails() {
   const { id } = useParams()
   const { isInWatchlist, toggleWatchlist } = useWatchlist()
-  const { isLoggedIn } = useAuth()
+  const { isAuthenticated } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
   
@@ -233,7 +233,7 @@ export default function MovieDetails() {
               <button
                 id="detail-watchlist-btn"
                 onClick={() => {
-                  if (!isLoggedIn) {
+                  if (!isAuthenticated) {
                     navigate('/login', { state: { from: location } })
                     return
                   }

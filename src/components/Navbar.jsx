@@ -11,7 +11,7 @@ export default function Navbar() {
   const [searchOpen, setSearchOpen] = useState(false)
   const [query, setQuery] = useState('')
   const { watchlist } = useWatchlist()
-  const { user, isLoggedIn, logout } = useAuth()
+  const { currentUser, isAuthenticated, logout } = useAuth()
   const [dropdownOpen, setDropdownOpen] = useState(false)
   const navigate = useNavigate()
   const location = useLocation()
@@ -25,6 +25,16 @@ export default function Navbar() {
     window.addEventListener('scroll', onScroll, { passive: true })
     return () => window.removeEventListener('scroll', onScroll)
   }, [])
+
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') setDropdownOpen(false)
+    }
+    if (dropdownOpen) {
+      window.addEventListener('keydown', handleKeyDown)
+    }
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [dropdownOpen])
 
   const handleSearch = (e) => {
     e.preventDefault()
@@ -110,7 +120,7 @@ export default function Navbar() {
                 )}
               </Link>
 
-              {isLoggedIn ? (
+              {isAuthenticated ? (
                 <div className="relative">
                   <button
                     id="navbar-profile-btn"
@@ -118,7 +128,7 @@ export default function Navbar() {
                     className="w-9 h-9 rounded-full bg-gradient-to-br from-brand-gold-muted to-brand-gold flex items-center justify-center text-xs font-bold text-brand-bg hover:shadow-glow-gold transition-all duration-300"
                     aria-label="Toggle profile menu"
                   >
-                    {user?.name ? user.name.slice(0, 2).toUpperCase() : 'MX'}
+                    {currentUser?.username ? currentUser.username.slice(0, 2).toUpperCase() : 'MX'}
                   </button>
                   
                   <AnimatePresence>
@@ -134,8 +144,8 @@ export default function Navbar() {
                         >
                           <div className="px-4 py-3 border-b border-brand-border">
                             <p className="text-xs text-gray-500 font-medium font-sans">Signed in as</p>
-                            <p className="text-sm font-bold text-white truncate mt-0.5 font-sans">{user?.name}</p>
-                            <p className="text-[11px] text-brand-gold truncate mt-0.5 font-sans">{user?.email}</p>
+                            <p className="text-sm font-bold text-white truncate mt-0.5 font-sans">{currentUser?.username}</p>
+                            <p className="text-[11px] text-brand-gold truncate mt-0.5 font-sans">{currentUser?.email}</p>
                           </div>
                           
                           <div className="p-1.5 space-y-1">
@@ -239,12 +249,12 @@ export default function Navbar() {
                   )
                 })}
                 <GenreDropdown variant="mobile" onNavigate={() => setMobileOpen(false)} />
-                {isLoggedIn ? (
+                {isAuthenticated ? (
                   <div className="mt-4 pt-4 border-t border-white/[0.06] space-y-3">
                     <div className="px-4">
                       <p className="text-xs text-gray-500 font-medium">Signed in as</p>
-                      <p className="text-sm font-bold text-white truncate mt-0.5">{user?.name}</p>
-                      <p className="text-[11px] text-[#D4AF37] truncate mt-0.5">{user?.email}</p>
+                      <p className="text-sm font-bold text-white truncate mt-0.5">{currentUser?.username}</p>
+                      <p className="text-[11px] text-[#D4AF37] truncate mt-0.5">{currentUser?.email}</p>
                     </div>
                     <div className="flex flex-col gap-1">
                       <Link

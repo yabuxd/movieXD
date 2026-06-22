@@ -3,7 +3,7 @@ import { useWatchlist } from '../context/WatchlistContext'
 import { Link } from 'react-router-dom'
 
 export default function Profile() {
-  const { user } = useAuth()
+  const { currentUser } = useAuth()
   const { watchlist } = useWatchlist()
 
   return (
@@ -23,10 +23,10 @@ export default function Profile() {
           {/* Avatar Area */}
           <div className="flex flex-col items-center text-center space-y-3 pb-6 border-b border-brand-border">
             <div className="w-20 h-20 rounded-full bg-gradient-to-br from-brand-gold to-brand-gold-muted flex items-center justify-center text-2xl font-black text-brand-bg shadow-glow-gold">
-              {user?.name ? user.name.slice(0, 2).toUpperCase() : 'MX'}
+              {currentUser?.username ? currentUser.username.slice(0, 2).toUpperCase() : 'MX'}
             </div>
             <div>
-              <h2 className="text-xl font-bold text-white">{user?.name}</h2>
+              <h2 className="text-xl font-bold text-white">{currentUser?.username}</h2>
               <p className="text-xs text-brand-gold font-medium tracking-wide mt-0.5">VIP Cinema Member</p>
             </div>
           </div>
@@ -35,7 +35,7 @@ export default function Profile() {
           <div className="space-y-4">
             <div>
               <span className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Email Address</span>
-              <span className="text-white text-base font-medium">{user?.email}</span>
+              <span className="text-white text-base font-medium">{currentUser?.email}</span>
             </div>
 
             <div>

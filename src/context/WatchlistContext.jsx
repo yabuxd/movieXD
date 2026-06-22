@@ -4,8 +4,8 @@ import { useAuth } from './AuthContext'
 const WatchlistContext = createContext(null)
 
 export function WatchlistProvider({ children }) {
-  const { user } = useAuth()
-  const storageKey = user ? `watchlist_${user.email}` : 'watchlist'
+  const { currentUser } = useAuth()
+  const storageKey = currentUser ? `watchlist_${currentUser.id}` : 'watchlist'
 
   const [watchlist, setWatchlist] = useState([])
   const [loadedKey, setLoadedKey] = useState('')
@@ -25,20 +25,55 @@ export function WatchlistProvider({ children }) {
   }, [watchlist, storageKey, loadedKey])
 
   const isInWatchlist = useCallback(
-    (id) => watchlist.some((m) => m.id === id),
+    (id) => watchlist.some((m) => String(m.id) === String(id)),
     [watchlist]
   )
 
+  const addToWatchlist = useCallback((movie) => {
+    setWatchlist((prev) => {
+      const stringId = String(movie.id)
+      if (prev.some((m) => String(m.id) === stringId)) {
+        return prev // Silently ignore duplicate
+      }
+      const newItem = {
+        id: stringId,
+        title: movie.title || '',
+        poster_path: movie.poster_path || '',
+        release_date: movie.release_date || '',
+        vote_average: movie.vote_average || 0,
+        addedAt: Date.now()
+      }
+      return [...prev, newItem]
+    })
+  }, [])
+
+  const removeFromWatchlist = useCallback((movieId) => {
+    setWatchlist((prev) => prev.filter((m) => String(m.id) !== String(movieId)))
+  }, [])
+
   const toggleWatchlist = useCallback((movie) => {
-    setWatchlist((prev) =>
-      prev.some((m) => m.id === movie.id)
-        ? prev.filter((m) => m.id !== movie.id)
-        : [...prev, movie]
-    )
+    setWatchlist((prev) => {
+      const stringId = String(movie.id)
+      if (prev.some((m) => String(m.id) === stringId)) {
+        return prev.filter((m) => String(m.id) !== stringId)
+      } else {
+        return [
+          ...prev,
+          {
+            id: stringId,
+            title: movie.title || '',
+            poster_path: movie.poster_path || '',
+            release_date: movie.release_date || '',
+            vote_average: movie.vote_average || 0,
+            addedAt: Date.now()
+          }
+        ]
+      }
+    })
   }, [])
 
   return (
-    <WatchlistContext.Provider value={{ watchlist, isInWatchlist, toggleWatchlist }}>
+    <WatchlistContext.Provider value={{ watchlist, isInWatchlist, addToWatchlist, removeFromWatchlist, toggleWatchlist }}>
       {children}
     </WatchlistContext.Provider>
   )

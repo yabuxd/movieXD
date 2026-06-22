@@ -6,7 +6,7 @@ import { useAuth } from '../context/AuthContext'
 
 export default function HeroBanner({ movie }) {
   const { isInWatchlist, toggleWatchlist } = useWatchlist()
-  const { isLoggedIn } = useAuth()
+  const { isAuthenticated } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
   const inWatchlist = isInWatchlist(movie.id)
@@ -107,7 +107,7 @@ export default function HeroBanner({ movie }) {
             <button
               id="hero-watchlist-btn"
               onClick={() => {
-                if (!isLoggedIn) {
+                if (!isAuthenticated) {
                   navigate('/login', { state: { from: location } })
                   return
                 }
