@@ -1,10 +1,14 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { useWatchlist } from '../context/WatchlistContext'
+import { useAuth } from '../context/AuthContext'
 
 export default function HeroBanner({ movie }) {
   const { isInWatchlist, toggleWatchlist } = useWatchlist()
+  const { isLoggedIn } = useAuth()
+  const navigate = useNavigate()
+  const location = useLocation()
   const inWatchlist = isInWatchlist(movie.id)
   const [imgError, setImgError] = useState(false)
   const [imgIndex, setImgIndex] = useState(0)
@@ -102,7 +106,13 @@ export default function HeroBanner({ movie }) {
             </Link>
             <button
               id="hero-watchlist-btn"
-              onClick={() => toggleWatchlist(movie)}
+              onClick={() => {
+                if (!isLoggedIn) {
+                  navigate('/login', { state: { from: location } })
+                  return
+                }
+                toggleWatchlist(movie)
+              }}
               className={`btn-secondary text-base ${inWatchlist ? '!border-brand-gold-muted !text-brand-gold-muted' : ''}`}
             >
               {inWatchlist ? <CheckIcon /> : <PlusIcon />}

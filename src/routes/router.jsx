@@ -5,9 +5,12 @@ import Search from '../pages/Search'
 import MovieDetails from '../pages/MovieDetails'
 import Watchlist from '../pages/Watchlist'
 import Login from '../pages/Login'
+import Register from '../pages/Register'
+import Profile from '../pages/Profile'
 import NotFound from '../pages/NotFound'
 import Discover from '../pages/Discover'
 import GenrePage from '../pages/GenrePage'
+import ProtectedRoute from '../components/ProtectedRoute'
 
 const router = createBrowserRouter([
   {
@@ -19,8 +22,24 @@ const router = createBrowserRouter([
       { path: 'discover', element: <Discover /> },
       { path: 'genre/:id', element: <GenrePage /> },
       { path: 'movie/:id', element: <MovieDetails /> },
-      { path: 'watchlist', element: <Watchlist /> },
+      {
+        path: 'watchlist',
+        element: (
+          <ProtectedRoute>
+            <Watchlist />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: 'profile',
+        element: (
+          <ProtectedRoute>
+            <Profile />
+          </ProtectedRoute>
+        ),
+      },
       { path: 'login', element: <Login /> },
+      { path: 'register', element: <Register /> },
       { path: '*', element: <NotFound /> },
     ],
   },

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { NavLink, Link, useNavigate, useLocation } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useWatchlist } from '../context/WatchlistContext'
+import { useAuth } from '../context/AuthContext'
 import GenreDropdown from './GenreDropdown'
 
 export default function Navbar() {
@@ -10,6 +11,8 @@ export default function Navbar() {
   const [searchOpen, setSearchOpen] = useState(false)
   const [query, setQuery] = useState('')
   const { watchlist } = useWatchlist()
+  const { user, isLoggedIn, logout } = useAuth()
+  const [dropdownOpen, setDropdownOpen] = useState(false)
   const navigate = useNavigate()
   const location = useLocation()
   const isMoviesActive =
@@ -107,14 +110,88 @@ export default function Navbar() {
                 )}
               </Link>
 
-              <Link
-                to="/login"
-                id="navbar-profile-btn"
-                className="w-9 h-9 rounded-full bg-gradient-to-br from-brand-gold-muted to-brand-gold flex items-center justify-center text-xs font-bold text-brand-bg hover:shadow-glow-gold transition-all duration-300"
-                aria-label="Profile"
-              >
-                MX
-              </Link>
+              {isLoggedIn ? (
+                <div className="relative">
+                  <button
+                    id="navbar-profile-btn"
+                    onClick={() => setDropdownOpen(!dropdownOpen)}
+                    className="w-9 h-9 rounded-full bg-gradient-to-br from-brand-gold-muted to-brand-gold flex items-center justify-center text-xs font-bold text-brand-bg hover:shadow-glow-gold transition-all duration-300"
+                    aria-label="Toggle profile menu"
+                  >
+                    {user?.name ? user.name.slice(0, 2).toUpperCase() : 'MX'}
+                  </button>
+                  
+                  <AnimatePresence>
+                    {dropdownOpen && (
+                      <>
+                        <div className="fixed inset-0 z-40" onClick={() => setDropdownOpen(false)} />
+                        <motion.div
+                          initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                          animate={{ opacity: 1, y: 0, scale: 1 }}
+                          exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                          transition={{ duration: 0.15 }}
+                          className="absolute right-0 mt-2 w-56 rounded-2xl glass border border-brand-border shadow-2xl py-2 overflow-hidden origin-top-right z-50"
+                        >
+                          <div className="px-4 py-3 border-b border-brand-border">
+                            <p className="text-xs text-gray-500 font-medium font-sans">Signed in as</p>
+                            <p className="text-sm font-bold text-white truncate mt-0.5 font-sans">{user?.name}</p>
+                            <p className="text-[11px] text-brand-gold truncate mt-0.5 font-sans">{user?.email}</p>
+                          </div>
+                          
+                          <div className="p-1.5 space-y-1">
+                            <Link
+                              to="/profile"
+                              id="dropdown-profile-btn"
+                              onClick={() => setDropdownOpen(false)}
+                              className="flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl text-sm text-gray-300 hover:text-white hover:bg-white/5 transition-all duration-200"
+                            >
+                              <svg className="w-4 h-4 text-brand-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                              </svg>
+                              Profile
+                            </Link>
+                            
+                            <Link
+                              to="/watchlist"
+                              id="dropdown-watchlist-btn"
+                              onClick={() => setDropdownOpen(false)}
+                              className="flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl text-sm text-gray-300 hover:text-white hover:bg-white/5 transition-all duration-200"
+                            >
+                              <svg className="w-4 h-4 text-brand-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
+                              </svg>
+                              Watchlist
+                            </Link>
+                            
+                            <button
+                              id="dropdown-logout-btn"
+                              onClick={() => {
+                                setDropdownOpen(false)
+                                logout()
+                                navigate('/login')
+                              }}
+                              className="w-full flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl text-sm text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-all duration-200 text-left"
+                            >
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                              </svg>
+                              Logout
+                            </button>
+                          </div>
+                        </motion.div>
+                      </>
+                    )}
+                  </AnimatePresence>
+                </div>
+              ) : (
+                <Link
+                  to="/login"
+                  id="navbar-signin-btn"
+                  className="px-4 py-2 rounded-xl text-sm font-semibold border border-brand-gold text-brand-gold hover:bg-brand-gold/10 transition-all duration-300"
+                >
+                  Sign In
+                </Link>
+              )}
 
               <button
                 id="navbar-mobile-menu-btn"
@@ -162,6 +239,51 @@ export default function Navbar() {
                   )
                 })}
                 <GenreDropdown variant="mobile" onNavigate={() => setMobileOpen(false)} />
+                {isLoggedIn ? (
+                  <div className="mt-4 pt-4 border-t border-white/[0.06] space-y-3">
+                    <div className="px-4">
+                      <p className="text-xs text-gray-500 font-medium">Signed in as</p>
+                      <p className="text-sm font-bold text-white truncate mt-0.5">{user?.name}</p>
+                      <p className="text-[11px] text-[#D4AF37] truncate mt-0.5">{user?.email}</p>
+                    </div>
+                    <div className="flex flex-col gap-1">
+                      <Link
+                        to="/profile"
+                        onClick={() => setMobileOpen(false)}
+                        className="flex items-center gap-2.5 px-4 py-3 rounded-xl text-sm text-gray-300 hover:text-white hover:bg-brand-surface/40 transition-all duration-200"
+                      >
+                        Profile
+                      </Link>
+                      <Link
+                        to="/watchlist"
+                        onClick={() => setMobileOpen(false)}
+                        className="flex items-center gap-2.5 px-4 py-3 rounded-xl text-sm text-gray-300 hover:text-white hover:bg-brand-surface/40 transition-all duration-200"
+                      >
+                        Watchlist
+                      </Link>
+                      <button
+                        onClick={() => {
+                          setMobileOpen(false)
+                          logout()
+                          navigate('/login')
+                        }}
+                        className="w-full flex items-center gap-2.5 px-4 py-3 rounded-xl text-sm text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-all duration-200 text-left"
+                      >
+                        Logout
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="mt-4 pt-4 border-t border-white/[0.06] px-4">
+                    <Link
+                      to="/login"
+                      onClick={() => setMobileOpen(false)}
+                      className="block text-center px-4 py-2.5 rounded-xl text-sm font-semibold border border-[#D4AF37] text-[#D4AF37] hover:bg-[#D4AF37]/10 transition-all duration-300"
+                    >
+                      Sign In
+                    </Link>
+                  </div>
+                )}
               </nav>
             </motion.div>
           )}

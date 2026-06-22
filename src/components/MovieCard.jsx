@@ -1,7 +1,8 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { useWatchlist } from '../context/WatchlistContext'
+import { useAuth } from '../context/AuthContext'
 
 const GENRE_MAP = {
   28: 'Action', 12: 'Adventure', 16: 'Animation', 35: 'Comedy', 80: 'Crime',
@@ -12,6 +13,9 @@ const GENRE_MAP = {
 
 export default function MovieCard({ movie, variant = 'default' }) {
   const { isInWatchlist, toggleWatchlist } = useWatchlist()
+  const { isLoggedIn } = useAuth()
+  const navigate = useNavigate()
+  const location = useLocation()
   const inWatchlist = isInWatchlist(movie.id)
   const [imgLoaded, setImgLoaded] = useState(false)
   const [imgError, setImgError] = useState(false)
@@ -90,6 +94,10 @@ export default function MovieCard({ movie, variant = 'default' }) {
             id={`watchlist-toggle-${movie.id}`}
             onClick={(e) => {
               e.preventDefault()
+              if (!isLoggedIn) {
+                navigate('/login', { state: { from: location } })
+                return
+              }
               toggleWatchlist(movie)
             }}
             className={`absolute top-3 right-3 w-8 h-8 rounded-full glass flex items-center justify-center transition-all duration-300 opacity-0 group-hover:opacity-100 translate-y-1 group-hover:translate-y-0 ${

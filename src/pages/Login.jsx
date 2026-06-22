@@ -1,26 +1,33 @@
 import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useLocation } from 'react-router-dom'
+import { useAuth } from '../context/AuthContext'
 
 export default function Login() {
   const navigate = useNavigate()
-  const [tab, setTab] = useState('login') // 'login' | 'signup'
-  const [form, setForm] = useState({ email: '', password: '', name: '' })
-  const [loading, setLoading] = useState(false)
+  const location = useLocation()
+  const { login, loading, error, setError } = useAuth()
+  const [form, setForm] = useState({ email: '', password: '' })
 
-  const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value })
+  const from = location.state?.from?.pathname || '/'
 
-  const handleSubmit = (e) => {
+  const handleChange = (e) => {
+    setForm({ ...form, [e.target.name]: e.target.value })
+    setError(null)
+  }
+
+  const handleSubmit = async (e) => {
     e.preventDefault()
-    setLoading(true)
-    // Simulate async auth — Week 2 will wire real API
-    setTimeout(() => {
-      setLoading(false)
-      navigate('/')
-    }, 1200)
+    try {
+      await login(form.email, form.password)
+      navigate(from, { replace: true })
+    } catch (err) {
+      // Error is stored in AuthContext and displayed below
+    }
   }
 
   return (
     <div className="min-h-screen bg-brand-bg flex items-center justify-center px-4 relative overflow-hidden">
+      {/* Background decorations */}
       <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-brand-gold/10 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute bottom-1/4 left-1/4 w-64 h-64 bg-brand-gold-muted/10 rounded-full blur-3xl pointer-events-none" />
 
@@ -45,38 +52,26 @@ export default function Login() {
         <div className="glass rounded-2xl border border-brand-border shadow-2xl overflow-hidden">
           {/* Tab switcher */}
           <div className="flex">
-            {['login', 'signup'].map((t) => (
-              <button
-                key={t}
-                id={`auth-tab-${t}`}
-                onClick={() => setTab(t)}
-                className={`flex-1 py-4 text-sm font-semibold transition-all duration-200 ${
-                  tab === t
-                    ? 'bg-brand-gold/10 text-white border-b-2 border-brand-gold'
-                    : 'text-gray-500 hover:text-gray-300 border-b border-brand-border'
-                }`}
-              >
-                {t === 'login' ? 'Sign In' : 'Create Account'}
-              </button>
-            ))}
+            <div className="flex-1 py-4 text-center text-sm font-semibold bg-brand-gold/10 text-white border-b-2 border-brand-gold">
+              Sign In
+            </div>
+            <Link
+              to="/register"
+              id="auth-tab-signup"
+              className="flex-1 py-4 text-center text-sm font-semibold text-gray-500 hover:text-gray-300 border-b border-brand-border transition-all duration-200"
+            >
+              Create Account
+            </Link>
           </div>
 
           <form onSubmit={handleSubmit} className="p-6 sm:p-8 space-y-5">
-            {tab === 'signup' && (
-              <div>
-                <label htmlFor="login-name" className="block text-sm font-medium text-gray-400 mb-1.5">
-                  Full Name
-                </label>
-                <input
-                  id="login-name"
-                  type="text"
-                  name="name"
-                  value={form.name}
-                  onChange={handleChange}
-                  placeholder="John Doe"
-                  required={tab === 'signup'}
-                  className="w-full bg-white/5 border border-brand-border rounded-xl px-4 py-3 text-white placeholder-gray-600 outline-none focus:border-brand-gold/60 focus:bg-white/8 transition-all duration-200"
-                />
+            {/* Display error message */}
+            {error && (
+              <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 text-sm flex items-center gap-2 animate-shake">
+                <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+                <span>{error}</span>
               </div>
             )}
 
@@ -101,14 +96,12 @@ export default function Login() {
                 <label htmlFor="login-password" className="block text-sm font-medium text-gray-400">
                   Password
                 </label>
-                {tab === 'login' && (
-                  <button
-                    type="button"
-                    className="text-xs text-brand-gold hover:text-brand-gold-hover transition-colors"
-                  >
-                    Forgot password?
-                  </button>
-                )}
+                <button
+                  type="button"
+                  className="text-xs text-brand-gold hover:text-brand-gold-hover transition-colors"
+                >
+                  Forgot password?
+                </button>
               </div>
               <input
                 id="login-password"
@@ -134,10 +127,10 @@ export default function Login() {
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                   </svg>
-                  {tab === 'login' ? 'Signing in...' : 'Creating account...'}
+                  Signing in...
                 </span>
               ) : (
-                tab === 'login' ? 'Sign In' : 'Create Account'
+                'Sign In'
               )}
             </button>
 

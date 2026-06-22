@@ -3,7 +3,7 @@ import MovieCard from '../components/MovieCard'
 import { useWatchlist } from '../context/WatchlistContext'
 
 export default function Watchlist() {
-  const { watchlist } = useWatchlist()
+  const { watchlist, toggleWatchlist } = useWatchlist()
 
   return (
     <div className="min-h-screen bg-brand-bg pt-24 pb-16 px-4 sm:px-6 lg:px-8 max-w-screen-xl mx-auto">
@@ -44,12 +44,12 @@ export default function Watchlist() {
           {watchlist.length > 0 && (
             <div className="mb-10">
               <h2 className="text-lg font-semibold text-gray-400 mb-4">Continue Watching</h2>
-              <Link
-                to={`/movie/${watchlist[0].id}`}
-                id="watchlist-featured-item"
-                className="group block relative rounded-2xl overflow-hidden bg-brand-card border border-brand-border hover:border-brand-gold/50 transition-all duration-300 max-w-xl"
-              >
-                <div className="flex flex-row gap-0">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 max-w-2xl bg-brand-card border border-brand-border hover:border-brand-gold/50 rounded-2xl overflow-hidden transition-all duration-300">
+                <Link
+                  to={`/movie/${watchlist[0].id}`}
+                  id="watchlist-featured-item"
+                  className="group flex flex-row gap-0 flex-1 min-w-0"
+                >
                   <div className="w-32 sm:w-48 aspect-[16/9] flex-shrink-0 relative">
                     {watchlist[0].poster_path ? (
                       <img
@@ -72,7 +72,7 @@ export default function Watchlist() {
                   </div>
                   <div className="p-3 sm:p-5 flex flex-col justify-center flex-1 min-w-0">
                     <p className="text-[10px] sm:text-xs text-brand-gold font-semibold uppercase tracking-wider mb-0.5 sm:mb-1">Movie</p>
-                    <h3 className="text-white text-base sm:text-xl font-bold mb-1 sm:mb-2 group-hover:text-brand-gold transition-colors truncate">
+                    <h3 className="text-white text-base sm:text-lg font-bold mb-1 sm:mb-2 group-hover:text-brand-gold transition-colors truncate">
                       {watchlist[0].title}
                     </h3>
                     {watchlist[0].vote_average > 0 && (
@@ -90,17 +90,43 @@ export default function Watchlist() {
                     </div>
                     <p className="text-gray-500 text-[10px] sm:text-xs">38% watched</p>
                   </div>
+                </Link>
+                <div className="px-4 pb-4 sm:pb-0 sm:pr-6 flex items-center justify-end">
+                  <button
+                    onClick={() => toggleWatchlist(watchlist[0])}
+                    className="py-2 px-4 bg-red-500/10 hover:bg-red-600 border border-red-500/20 hover:border-red-500 text-red-400 hover:text-white text-xs font-semibold rounded-xl transition-all duration-200 flex items-center gap-1.5"
+                    aria-label="Remove from watchlist"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                    Remove
+                  </button>
                 </div>
-              </Link>
+              </div>
             </div>
           )}
 
           {/* All Saved */}
           <div>
             <h2 className="text-lg font-semibold text-gray-400 mb-4">All Saved ({watchlist.length})</h2>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-5">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-x-5 gap-y-8">
               {watchlist.map((movie) => (
-                <MovieCard key={movie.id} movie={movie} />
+                <div key={movie.id} className="flex flex-col h-full">
+                  <div className="flex-1">
+                    <MovieCard movie={movie} />
+                  </div>
+                  <button
+                    onClick={() => toggleWatchlist(movie)}
+                    className="mt-3 py-2 px-3 bg-red-500/10 hover:bg-red-600 border border-red-500/20 hover:border-red-500 text-red-400 hover:text-white text-xs font-semibold rounded-xl transition-all duration-200 flex items-center justify-center gap-1.5"
+                    aria-label={`Remove ${movie.title} from watchlist`}
+                  >
+                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                    Remove
+                  </button>
+                </div>
               ))}
             </div>
           </div>

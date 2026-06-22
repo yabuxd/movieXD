@@ -1,16 +1,28 @@
 import { createContext, useContext, useState, useCallback, useEffect } from 'react'
+import { useAuth } from './AuthContext'
 
 const WatchlistContext = createContext(null)
 
 export function WatchlistProvider({ children }) {
-  const [watchlist, setWatchlist] = useState(() => {
-    const saved = localStorage.getItem('watchlist')
-    return saved ? JSON.parse(saved) : []
-  })
+  const { user } = useAuth()
+  const storageKey = user ? `watchlist_${user.email}` : 'watchlist'
 
+  const [watchlist, setWatchlist] = useState([])
+  const [loadedKey, setLoadedKey] = useState('')
+
+  // Load from localStorage when storageKey changes
   useEffect(() => {
-    localStorage.setItem('watchlist', JSON.stringify(watchlist))
-  }, [watchlist])
+    const saved = localStorage.getItem(storageKey)
+    setWatchlist(saved ? JSON.parse(saved) : [])
+    setLoadedKey(storageKey)
+  }, [storageKey])
+
+  // Save to localStorage only if we are saving for the loadedKey
+  useEffect(() => {
+    if (loadedKey === storageKey) {
+      localStorage.setItem(storageKey, JSON.stringify(watchlist))
+    }
+  }, [watchlist, storageKey, loadedKey])
 
   const isInWatchlist = useCallback(
     (id) => watchlist.some((m) => m.id === id),

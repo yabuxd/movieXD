@@ -1,12 +1,16 @@
-import { useParams, Link } from 'react-router-dom'
+import { useParams, Link, useNavigate, useLocation } from 'react-router-dom'
 import { useState, useEffect, useRef } from 'react'
 import { useWatchlist } from '../context/WatchlistContext'
+import { useAuth } from '../context/AuthContext'
 import { getMovieDetails } from '../services/tmdb'
 import LoadingSpinner from '../components/LoadingSpinner'
 
 export default function MovieDetails() {
   const { id } = useParams()
   const { isInWatchlist, toggleWatchlist } = useWatchlist()
+  const { isLoggedIn } = useAuth()
+  const navigate = useNavigate()
+  const location = useLocation()
   
   const [movie, setMovie] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -228,22 +232,28 @@ export default function MovieDetails() {
               </button>
               <button
                 id="detail-watchlist-btn"
-                onClick={() => toggleWatchlist(movie)}
-                className={`btn-secondary text-base ${inWatchlist ? 'border-brand-gold text-brand-gold bg-brand-gold/10' : ''}`}
+                onClick={() => {
+                  if (!isLoggedIn) {
+                    navigate('/login', { state: { from: location } })
+                    return
+                  }
+                  toggleWatchlist(movie)
+                }}
+                className={`btn-secondary text-base ${inWatchlist ? 'border-red-500/50 text-red-400 bg-red-500/10 hover:border-red-500 hover:text-white' : ''}`}
               >
                 {inWatchlist ? (
                   <>
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                     </svg>
-                    In My List
+                    Remove from Watchlist
                   </>
                 ) : (
                   <>
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
                     </svg>
-                    Add to List
+                    Add to Watchlist
                   </>
                 )}
               </button>
