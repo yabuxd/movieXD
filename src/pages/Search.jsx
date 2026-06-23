@@ -1,5 +1,6 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useRef, useCallback } from 'react'
 import { useSearchParams } from 'react-router-dom'
+import { Helmet } from 'react-helmet-async'
 import MovieCard from '../components/MovieCard'
 import SkeletonCard from '../components/SkeletonCard'
 import { searchMovies, getPopular, getGenres, discoverMovies } from '../services/tmdb'
@@ -19,8 +20,25 @@ export default function Search() {
   const [localQ, setLocalQ] = useState(query)
   const [debouncedQ, setDebouncedQ] = useState(query)
   const [sortBy, setSortBy] = useState('default')
+  
   const [movies, setMovies] = useState([])
   const [isLoading, setIsLoading] = useState(true)
+  const [isLoadingMore, setIsLoadingMore] = useState(false)
+  
+  const [page, setPage] = useState(1)
+  const [hasMore, setHasMore] = useState(true)
+
+  const observer = useRef()
+  const lastMovieElementRef = useCallback(node => {
+    if (isLoadingMore) return
+    if (observer.current) observer.current.disconnect()
+    observer.current = new IntersectionObserver(entries => {
+      if (entries[0].isIntersecting && hasMore) {
+        setPage(prevPage => prevPage + 1)
+      }
+    })
+    if (node) observer.current.observe(node)
+  }, [isLoadingMore, hasMore])
 
   // Debouncing effect
   useEffect(() => {
@@ -38,6 +56,13 @@ export default function Search() {
     }
   }, [localQ, setSearchParams])
 
+  // Reset page and results when query changes
+  useEffect(() => {
+    setMovies([])
+    setPage(1)
+    setHasMore(true)
+  }, [debouncedQ])
+
   const [genres, setGenres] = useState([])
 
   // Fetch Genres for parsing
@@ -54,9 +79,14 @@ export default function Search() {
   // Fetch effect
   useEffect(() => {
     const fetchResults = async () => {
-      setIsLoading(true)
+      if (page === 1) setIsLoading(true)
+      else setIsLoadingMore(true)
+
       try {
         const q = debouncedQ.trim().toLowerCase()
+        let newData = []
+        let totalPages = 1
+
         if (q) {
           // Natural Language parsing
           const genreMatch = genres.find(g => q.includes(g.name.toLowerCase()))
@@ -66,34 +96,48 @@ export default function Search() {
           if (isSmartQuery) {
             // Use Discover API for smart queries
             const params = {
-              sort_by: 'popularity.desc'
+              sort_by: 'popularity.desc',
+              page: page
             }
             if (genreMatch) params.with_genres = genreMatch.id
             if (yearMatch) params.primary_release_year = yearMatch[0]
             
             const data = await discoverMovies(params)
-            setMovies(data.results || [])
+            newData = data.results || []
+            totalPages = data.total_pages
           } else {
             // Use Search API for normal title queries
-            const data = await searchMovies(debouncedQ)
-            setMovies(data.results || [])
+            const data = await searchMovies(debouncedQ, page)
+            newData = data.results || []
+            totalPages = data.total_pages
           }
         } else {
-          const data = await getPopular()
-          setMovies(data.results || [])
+          const data = await getPopular(page)
+          newData = data.results || []
+          totalPages = data.total_pages
         }
+
+        setMovies(prev => {
+          // avoid duplicates
+          const existingIds = new Set(prev.map(m => m.id))
+          const filteredNew = newData.filter(m => !existingIds.has(m.id))
+          return page === 1 ? newData : [...prev, ...filteredNew]
+        })
+        
+        setHasMore(page < totalPages && newData.length > 0)
       } catch (err) {
         console.error('Search failed:', err)
-        setMovies([])
+        if (page === 1) setMovies([])
       } finally {
         setIsLoading(false)
+        setIsLoadingMore(false)
       }
     }
 
     if (genres.length > 0 || !debouncedQ.trim()) {
       fetchResults()
     }
-  }, [debouncedQ, genres])
+  }, [debouncedQ, genres, page])
 
   const results = useMemo(() => {
     let list = [...movies]
@@ -136,8 +180,13 @@ export default function Search() {
   }
 
   return (
-    <div className="min-h-screen bg-brand-bg pt-24 pb-16 px-4 sm:px-6 lg:px-8 max-w-screen-xl mx-auto">
-      {/* Page Title */}
+    <>
+      <Helmet>
+        <title>{debouncedQ ? `Search: ${debouncedQ} — CineFlow` : 'Search Movies — CineFlow'}</title>
+        <meta name="description" content="Search for movies and TV shows on CineFlow." />
+      </Helmet>
+      <div className="min-h-screen bg-brand-bg pt-24 pb-16 px-4 sm:px-6 lg:px-8 max-w-screen-xl mx-auto">
+        {/* Page Title */}
       <h1 className="text-3xl font-bold text-white mb-8">
         {debouncedQ ? (
           <>
@@ -205,13 +254,6 @@ export default function Search() {
         </div>
       </div>
 
-      {/* Results count */}
-      {!isLoading && (
-        <p className="text-gray-500 text-sm mb-6">
-          {results.length} {results.length === 1 ? 'movie' : 'movies'} found
-        </p>
-      )}
-
       {/* Grid */}
       {isLoading ? (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-5">
@@ -220,11 +262,29 @@ export default function Search() {
           ))}
         </div>
       ) : results.length > 0 ? (
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-5">
-          {results.map((movie) => (
-            <MovieCard key={movie.id} movie={movie} />
-          ))}
-        </div>
+        <>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-5">
+            {results.map((movie, index) => {
+              if (results.length === index + 1) {
+                return (
+                  <div ref={lastMovieElementRef} key={movie.id} className="h-full">
+                    <MovieCard movie={movie} />
+                  </div>
+                )
+              } else {
+                return <MovieCard key={movie.id} movie={movie} />
+              }
+            })}
+          </div>
+          
+          {isLoadingMore && (
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-5 mt-5">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <SkeletonCard key={`more-${i}`} />
+              ))}
+            </div>
+          )}
+        </>
       ) : (
         <div className="flex flex-col items-center justify-center py-24 text-center">
           <svg className="w-16 h-16 text-gray-700 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -234,6 +294,7 @@ export default function Search() {
           <p className="text-gray-600 text-sm">Try a different search term.</p>
         </div>
       )}
-    </div>
+      </div>
+    </>
   )
 }

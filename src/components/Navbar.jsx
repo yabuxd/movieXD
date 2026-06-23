@@ -3,6 +3,7 @@ import { NavLink, Link, useNavigate, useLocation } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useWatchlist } from '../context/WatchlistContext'
 import { useAuth } from '../context/AuthContext'
+import { useTheme } from '../context/ThemeContext'
 import GenreDropdown from './GenreDropdown'
 
 export default function Navbar() {
@@ -12,6 +13,7 @@ export default function Navbar() {
   const [query, setQuery] = useState('')
   const { watchlist } = useWatchlist()
   const { currentUser, isAuthenticated, logout } = useAuth()
+  const { isDarkMode, toggleTheme } = useTheme()
   const [dropdownOpen, setDropdownOpen] = useState(false)
   const navigate = useNavigate()
   const location = useLocation()
@@ -98,6 +100,15 @@ export default function Navbar() {
 
             <div className="flex items-center gap-1">
               <button
+                id="theme-toggle-btn"
+                onClick={toggleTheme}
+                className="p-2.5 rounded-xl text-brand-muted hover:text-brand-gold-hover hover:bg-brand-surface/60 transition-all duration-200"
+                aria-label="Toggle theme"
+              >
+                {isDarkMode ? <SunIcon /> : <MoonIcon />}
+              </button>
+
+              <button
                 id="navbar-search-btn"
                 onClick={() => setSearchOpen(true)}
                 className="p-2.5 rounded-xl text-brand-muted hover:text-brand-gold-hover hover:bg-brand-surface/60 transition-all duration-300"
@@ -105,6 +116,15 @@ export default function Navbar() {
               >
                 <SearchIcon />
               </button>
+
+              <Link
+                to="/favorites"
+                id="navbar-favorites-btn"
+                className="relative p-2.5 rounded-xl text-brand-muted hover:text-brand-gold-hover hover:bg-brand-surface/60 transition-all duration-300"
+                aria-label="My Favorites"
+              >
+                <HeartIcon />
+              </Link>
 
               <Link
                 to="/watchlist"
@@ -167,10 +187,18 @@ export default function Navbar() {
                               onClick={() => setDropdownOpen(false)}
                               className="flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl text-sm text-gray-300 hover:text-white hover:bg-white/5 transition-all duration-200"
                             >
-                              <svg className="w-4 h-4 text-brand-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
-                              </svg>
+                              <BookmarkIcon className="w-4 h-4 text-brand-gold" />
                               Watchlist
+                            </Link>
+                            
+                            <Link
+                              to="/favorites"
+                              id="dropdown-favorites-btn"
+                              onClick={() => setDropdownOpen(false)}
+                              className="flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl text-sm text-gray-300 hover:text-white hover:bg-white/5 transition-all duration-200"
+                            >
+                              <HeartIcon className="w-4 h-4 text-brand-gold" />
+                              Favorites
                             </Link>
                             
                             <button
@@ -270,6 +298,13 @@ export default function Navbar() {
                         className="flex items-center gap-2.5 px-4 py-3 rounded-xl text-sm text-gray-300 hover:text-white hover:bg-brand-surface/40 transition-all duration-200"
                       >
                         Watchlist
+                      </Link>
+                      <Link
+                        to="/favorites"
+                        onClick={() => setMobileOpen(false)}
+                        className="flex items-center gap-2.5 px-4 py-3 rounded-xl text-sm text-gray-300 hover:text-white hover:bg-brand-surface/40 transition-all duration-200"
+                      >
+                        Favorites
                       </Link>
                       <button
                         onClick={() => {
@@ -374,6 +409,30 @@ function CloseIcon() {
   return (
     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+    </svg>
+  )
+}
+
+function SunIcon() {
+  return (
+    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+    </svg>
+  )
+}
+
+function MoonIcon() {
+  return (
+    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+    </svg>
+  )
+}
+
+function HeartIcon({ className = "w-5 h-5" }) {
+  return (
+    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
     </svg>
   )
 }

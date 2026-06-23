@@ -1,13 +1,19 @@
 import { useParams, Link, useNavigate, useLocation } from 'react-router-dom'
 import { useState, useEffect, useRef } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { Helmet } from 'react-helmet-async'
 import { useWatchlist } from '../context/WatchlistContext'
 import { useAuth } from '../context/AuthContext'
+import { useFavorites } from '../context/FavoritesContext'
+import { useContinueWatching } from '../context/ContinueWatchingContext'
 import { getMovieDetails } from '../services/tmdb'
 import LoadingSpinner from '../components/LoadingSpinner'
 
 export default function MovieDetails() {
   const { id } = useParams()
   const { isInWatchlist, toggleWatchlist } = useWatchlist()
+  const { isFavorite, toggleFavorite } = useFavorites()
+  const { addToHistory } = useContinueWatching()
   const { isAuthenticated } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
@@ -29,6 +35,7 @@ export default function MovieDetails() {
       try {
         const data = await getMovieDetails(id)
         setMovie(data)
+        addToHistory(data)
       } catch (err) {
         console.error('Failed to load movie details:', err)
         setError('Failed to load movie details. Please try again.')
@@ -109,7 +116,12 @@ export default function MovieDetails() {
   }
 
   return (
-    <div className="min-h-screen bg-brand-bg relative">
+    <>
+      <Helmet>
+        <title>{movie.title} — CineFlow</title>
+        <meta name="description" content={movie.overview ? movie.overview.substring(0, 160) : `Watch ${movie.title} on CineFlow.`} />
+      </Helmet>
+      <div className="min-h-screen bg-brand-bg relative">
       {/* Backdrop Section */}
       <div className="relative h-[50vh] md:h-[65vh] overflow-hidden">
         {backdropSrc && !imgError ? (
@@ -254,6 +266,35 @@ export default function MovieDetails() {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
                     </svg>
                     Add to Watchlist
+                  </>
+                )}
+              </button>
+              
+              <button
+                id="detail-favorite-btn"
+                onClick={() => {
+                  if (!isAuthenticated) {
+                    navigate('/login', { state: { from: location } })
+                    return
+                  }
+                  if (toggleFavorite) toggleFavorite(movie)
+                }}
+                className={`btn-secondary text-base ${isFavorite && isFavorite(movie.id) ? 'border-red-500/50 text-white bg-red-500 hover:border-red-600 hover:bg-red-600' : 'border-gray-600 hover:border-red-500 hover:text-red-400'}`}
+                title={isFavorite && isFavorite(movie.id) ? 'Remove from Favorites' : 'Add to Favorites'}
+              >
+                {isFavorite && isFavorite(movie.id) ? (
+                  <>
+                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                    </svg>
+                    Added to Favorites
+                  </>
+                ) : (
+                  <>
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                    </svg>
+                    Add to Favorites
                   </>
                 )}
               </button>
@@ -501,38 +542,48 @@ export default function MovieDetails() {
       </div>
 
       {/* Trailer Modal (YouTube Embed with Backdrop Blur) */}
-      {isTrailerOpen && trailerKey && (
-        <div 
-          onClick={() => setIsTrailerOpen(false)}
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-md p-4 animate-fade-in cursor-pointer"
-        >
-          <div 
-            onClick={(e) => e.stopPropagation()} // Prevent closing when clicking inside content
-            className="relative w-full max-w-4xl bg-brand-surface border border-brand-gold/20 rounded-2xl overflow-hidden shadow-glow-gold-lg animate-scale-up cursor-default"
+      <AnimatePresence>
+        {isTrailerOpen && trailerKey && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setIsTrailerOpen(false)}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-md p-4 cursor-pointer"
           >
-            {/* Close button */}
-            <button
-              onClick={() => setIsTrailerOpen(false)}
-              className="absolute top-4 right-4 z-10 w-10 h-10 rounded-full bg-brand-bg/85 border border-[#D4AF37]/35 hover:border-[#D4AF37] text-[#D4AF37] hover:text-[#E6C55A] flex items-center justify-center transition-all duration-200 shadow-lg hover:bg-brand-gold/10"
-              aria-label="Close trailer"
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              transition={{ duration: 0.2 }}
+              onClick={(e) => e.stopPropagation()} // Prevent closing when clicking inside content
+              className="relative w-full max-w-4xl bg-brand-surface border border-brand-gold/20 rounded-2xl overflow-hidden shadow-glow-gold-lg cursor-default"
             >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-            {/* Youtube Embed */}
-            <div className="aspect-video w-full">
-              <iframe
-                src={`https://www.youtube.com/embed/${trailerKey}?autoplay=1&rel=0`}
-                title={`${movie.title} Trailer`}
-                className="w-full h-full border-none"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
-              ></iframe>
-            </div>
-          </div>
-        </div>
-      )}
+              {/* Close button */}
+              <button
+                onClick={() => setIsTrailerOpen(false)}
+                className="absolute top-4 right-4 z-10 w-10 h-10 rounded-full bg-brand-bg/85 border border-[#D4AF37]/35 hover:border-[#D4AF37] text-[#D4AF37] hover:text-[#E6C55A] flex items-center justify-center transition-all duration-200 shadow-lg hover:bg-brand-gold/10"
+                aria-label="Close trailer"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+              {/* Youtube Embed */}
+              <div className="aspect-video w-full">
+                <iframe
+                  src={`https://www.youtube.com/embed/${trailerKey}?autoplay=1&rel=0`}
+                  title={`${movie.title} Trailer`}
+                  className="w-full h-full border-none"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                ></iframe>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
+    </>
   )
 }

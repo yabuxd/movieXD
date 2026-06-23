@@ -16,8 +16,10 @@ export const getTrending = async () => {
   return response.data
 }
 
-export const getPopular = async () => {
-  const response = await tmdbApi.get('/movie/popular')
+export const getPopular = async (page = 1) => {
+  const response = await tmdbApi.get('/movie/popular', {
+    params: { page }
+  })
   return response.data
 }
 
@@ -31,9 +33,9 @@ export const getUpcoming = async () => {
   return response.data
 }
 
-export const searchMovies = async (query) => {
+export const searchMovies = async (query, page = 1) => {
   const response = await tmdbApi.get('/search/movie', {
-    params: { query },
+    params: { query, page },
   })
   return response.data
 }

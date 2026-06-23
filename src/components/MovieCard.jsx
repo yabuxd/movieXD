@@ -1,8 +1,9 @@
-import { useState } from 'react'
+import { useState, memo } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { useWatchlist } from '../context/WatchlistContext'
 import { useAuth } from '../context/AuthContext'
+import { useFavorites } from '../context/FavoritesContext'
 
 const GENRE_MAP = {
   28: 'Action', 12: 'Adventure', 16: 'Animation', 35: 'Comedy', 80: 'Crime',
@@ -11,12 +12,14 @@ const GENRE_MAP = {
   10770: 'TV Movie', 53: 'Thriller', 10752: 'War', 37: 'Western',
 }
 
-export default function MovieCard({ movie, variant = 'default' }) {
+const MovieCard = memo(function MovieCard({ movie, variant = 'default' }) {
   const { isInWatchlist, toggleWatchlist } = useWatchlist()
+  const { isFavorite, toggleFavorite } = useFavorites()
   const { isAuthenticated } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
   const inWatchlist = isInWatchlist(movie.id)
+  const isFav = isFavorite ? isFavorite(movie.id) : false
   const [imgLoaded, setImgLoaded] = useState(false)
   const [imgError, setImgError] = useState(false)
   const isAnime = variant === 'anime'
@@ -39,11 +42,18 @@ export default function MovieCard({ movie, variant = 'default' }) {
   const accentBg = isAnime ? 'bg-brand-gold-muted' : 'bg-brand-gold'
   const accentText = isAnime ? 'text-brand-gold-muted' : 'text-brand-gold'
 
+  const itemVariants = {
+    hidden: { opacity: 0, scale: 0.8 },
+    show: { opacity: 1, scale: 1 },
+    exit: { opacity: 0, scale: 0.8 }
+  }
+
   return (
     <motion.div
       id={`movie-card-${movie.id}`}
       className="group relative flex-shrink-0 w-40 sm:w-48 md:w-52 cursor-pointer"
-      whileHover={{ y: -6 }}
+      variants={itemVariants}
+      whileHover={{ y: -6, scale: 1.05 }}
       transition={{ duration: 0.3, ease: 'easeOut' }}
     >
       <Link to={`/movie/${movie.id}`} className="block">
@@ -68,6 +78,7 @@ export default function MovieCard({ movie, variant = 'default' }) {
               alt={movie.title}
               onLoad={() => setImgLoaded(true)}
               onError={() => setImgError(true)}
+              loading="lazy"
               className={`w-full h-full object-cover transition-all duration-500 group-hover:scale-105 ${
                 imgLoaded ? 'opacity-100' : 'opacity-0'
               }`}
@@ -116,6 +127,32 @@ export default function MovieCard({ movie, variant = 'default' }) {
             )}
           </button>
 
+          <button
+            id={`favorite-toggle-${movie.id}`}
+            onClick={(e) => {
+              e.preventDefault()
+              if (!isAuthenticated) {
+                navigate('/login', { state: { from: location } })
+                return
+              }
+              if (toggleFavorite) toggleFavorite(movie)
+            }}
+            className={`absolute top-12 right-3 w-8 h-8 rounded-full glass flex items-center justify-center transition-all duration-300 opacity-0 group-hover:opacity-100 translate-y-1 group-hover:translate-y-0 ${
+              isFav ? `bg-red-500 text-white` : 'text-brand-muted hover:text-red-400'
+            }`}
+            aria-label={isFav ? 'Remove from favorites' : 'Add to favorites'}
+          >
+            {isFav ? (
+              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+              </svg>
+            ) : (
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+              </svg>
+            )}
+          </button>
+
           <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300">
             <div className="w-14 h-14 glass rounded-full flex items-center justify-center shadow-glow-gold">
               <svg className="w-6 h-6 text-brand-text ml-0.5" fill="currentColor" viewBox="0 0 24 24">
@@ -148,7 +185,7 @@ export default function MovieCard({ movie, variant = 'default' }) {
       </div>
     </motion.div>
   )
-}
+})
 
 function FilmIcon({ className = '' }) {
   return (
@@ -158,3 +195,5 @@ function FilmIcon({ className = '' }) {
     </svg>
   )
 }
+
+export default MovieCard

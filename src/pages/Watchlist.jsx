@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import { Helmet } from 'react-helmet-async'
 import MovieCard from '../components/MovieCard'
 import { useWatchlist } from '../context/WatchlistContext'
 
@@ -9,7 +10,12 @@ export default function Watchlist() {
   const sortedWatchlist = [...watchlist].sort((a, b) => (b.addedAt || 0) - (a.addedAt || 0))
 
   return (
-    <div className="min-h-screen bg-brand-bg pt-24 pb-16 px-4 sm:px-6 lg:px-8 max-w-screen-xl mx-auto">
+    <>
+      <Helmet>
+        <title>My Watchlist — CineFlow</title>
+        <meta name="description" content="View and manage your saved movies and TV shows." />
+      </Helmet>
+      <div className="min-h-screen bg-brand-bg pt-24 pb-16 px-4 sm:px-6 lg:px-8 max-w-screen-xl mx-auto">
       {/* Header */}
       <div className="mb-10">
         <div className="flex items-center gap-3 mb-2">
@@ -58,6 +64,7 @@ export default function Watchlist() {
                       <img
                         src={sortedWatchlist[0].poster_path.startsWith('http') ? sortedWatchlist[0].poster_path : `https://image.tmdb.org/t/p/w500${sortedWatchlist[0].poster_path}`}
                         alt={sortedWatchlist[0].title}
+                        loading="lazy"
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                       />
                     ) : (
@@ -135,6 +142,7 @@ export default function Watchlist() {
           </div>
         </>
       )}
-    </div>
+      </div>
+    </>
   )
 }

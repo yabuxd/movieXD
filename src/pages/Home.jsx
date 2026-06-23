@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
+import { Helmet } from 'react-helmet-async'
 import HeroBanner from '../components/HeroBanner'
 import AnimeHero from '../components/AnimeHero'
 import Row from '../components/Row'
 import { getTrending, getPopular, getTopRated, getUpcoming, discoverMovies } from '../services/tmdb'
+import { useContinueWatching } from '../context/ContinueWatchingContext'
 
 export default function Home() {
   const [trending, setTrending] = useState([])
@@ -13,6 +15,7 @@ export default function Home() {
   const [anime, setAnime] = useState([])
   const [heroMovie, setHeroMovie] = useState(null)
   const [animeHero, setAnimeHero] = useState(null)
+  const { history } = useContinueWatching()
 
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -90,7 +93,12 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen bg-brand-bg">
+    <>
+      <Helmet>
+        <title>MovieXD — Watch Cinematic Movies & Shows</title>
+        <meta name="description" content="Discover, watch, and track the best movies and shows on MovieXD." />
+      </Helmet>
+      <div className="min-h-screen bg-brand-bg">
       {heroMovie ? (
         <HeroBanner movie={heroMovie} />
       ) : (
@@ -103,6 +111,9 @@ export default function Home() {
         transition={{ duration: 0.6, delay: 0.3 }}
         className="relative z-10 -mt-8 pb-20 space-y-12"
       >
+        {history && history.length > 0 && (
+          <Row title="Continue Watching" movies={history} isLoading={false} />
+        )}
         <Row title="Trending Now" movies={trending} badge="Hot" isLoading={isLoading} />
         <Row title="Popular on MovieXD" movies={popular} isLoading={isLoading} seeAllLink="/discover" />
 
@@ -120,5 +131,6 @@ export default function Home() {
         <Row title="Coming Soon" movies={upcoming} badge="New" isLoading={isLoading} />
       </motion.div>
     </div>
+    </>
   )
 }

@@ -1,46 +1,70 @@
 import { createBrowserRouter } from 'react-router-dom'
+import { lazy, Suspense } from 'react'
 import RootLayout from '../layouts/RootLayout'
-import Home from '../pages/Home'
-import Search from '../pages/Search'
-import MovieDetails from '../pages/MovieDetails'
-import Watchlist from '../pages/Watchlist'
-import Login from '../pages/Login'
-import Register from '../pages/Register'
-import Profile from '../pages/Profile'
-import NotFound from '../pages/NotFound'
-import Discover from '../pages/Discover'
-import GenrePage from '../pages/GenrePage'
-import ProtectedRoute from '../components/ProtectedRoute'
+import LoadingSpinner from '../components/LoadingSpinner'
+
+const Home = lazy(() => import('../pages/Home'))
+const Search = lazy(() => import('../pages/Search'))
+const MovieDetails = lazy(() => import('../pages/MovieDetails'))
+const Watchlist = lazy(() => import('../pages/Watchlist'))
+const Login = lazy(() => import('../pages/Login'))
+const Register = lazy(() => import('../pages/Register'))
+const Profile = lazy(() => import('../pages/Profile'))
+const NotFound = lazy(() => import('../pages/NotFound'))
+const Discover = lazy(() => import('../pages/Discover'))
+const GenrePage = lazy(() => import('../pages/GenrePage'))
+const ProtectedRoute = lazy(() => import('../components/ProtectedRoute'))
+const Favorites = lazy(() => import('../pages/Favorites'))
+
+const SuspenseWrapper = ({ children }) => (
+  <Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-brand-bg"><LoadingSpinner /></div>}>
+    {children}
+  </Suspense>
+)
 
 const router = createBrowserRouter([
   {
     path: '/',
     element: <RootLayout />,
     children: [
-      { index: true, element: <Home /> },
-      { path: 'search', element: <Search /> },
-      { path: 'discover', element: <Discover /> },
-      { path: 'genre/:id', element: <GenrePage /> },
-      { path: 'movie/:id', element: <MovieDetails /> },
+      { index: true, element: <SuspenseWrapper><Home /></SuspenseWrapper> },
+      { path: 'search', element: <SuspenseWrapper><Search /></SuspenseWrapper> },
+      { path: 'discover', element: <SuspenseWrapper><Discover /></SuspenseWrapper> },
+      { path: 'genre/:id', element: <SuspenseWrapper><GenrePage /></SuspenseWrapper> },
+      { path: 'movie/:id', element: <SuspenseWrapper><MovieDetails /></SuspenseWrapper> },
       {
         path: 'watchlist',
         element: (
-          <ProtectedRoute>
-            <Watchlist />
-          </ProtectedRoute>
+          <SuspenseWrapper>
+            <ProtectedRoute>
+              <Watchlist />
+            </ProtectedRoute>
+          </SuspenseWrapper>
+        ),
+      },
+      {
+        path: 'favorites',
+        element: (
+          <SuspenseWrapper>
+            <ProtectedRoute>
+              <Favorites />
+            </ProtectedRoute>
+          </SuspenseWrapper>
         ),
       },
       {
         path: 'profile',
         element: (
-          <ProtectedRoute>
-            <Profile />
-          </ProtectedRoute>
+          <SuspenseWrapper>
+            <ProtectedRoute>
+              <Profile />
+            </ProtectedRoute>
+          </SuspenseWrapper>
         ),
       },
-      { path: 'login', element: <Login /> },
-      { path: 'register', element: <Register /> },
-      { path: '*', element: <NotFound /> },
+      { path: 'login', element: <SuspenseWrapper><Login /></SuspenseWrapper> },
+      { path: 'register', element: <SuspenseWrapper><Register /></SuspenseWrapper> },
+      { path: '*', element: <SuspenseWrapper><NotFound /></SuspenseWrapper> },
     ],
   },
 ])

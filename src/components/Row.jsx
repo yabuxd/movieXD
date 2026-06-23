@@ -1,5 +1,6 @@
 import { useRef } from 'react'
 import { Link } from 'react-router-dom'
+import { motion } from 'framer-motion'
 import MovieCard from './MovieCard'
 import SkeletonCard from './SkeletonCard'
 
@@ -26,8 +27,23 @@ export default function Row({
     ? 'hover:bg-brand-gold-muted/80 hover:border-brand-gold-muted hover:shadow-glow-gold'
     : 'hover:bg-brand-gold/80 hover:border-brand-gold hover:shadow-glow-gold'
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: { staggerChildren: 0.1 }
+    }
+  }
+
   return (
-    <section id={`row-${title.toLowerCase().replace(/\s+/g, '-')}`} className="relative group/row">
+    <motion.section 
+      id={`row-${title.toLowerCase().replace(/\s+/g, '-')}`} 
+      className="relative group/row"
+      initial={{ y: 50, opacity: 0 }}
+      whileInView={{ y: 0, opacity: 1 }}
+      viewport={{ once: true, amount: 0.1 }}
+      transition={{ duration: 0.5, ease: 'easeOut' }}
+    >
       <div className="flex items-center justify-between mb-5 px-4 sm:px-6 lg:px-8">
         <div className="flex items-center gap-3">
           <h2 className={`text-xl sm:text-2xl font-bold ${isAnime ? 'text-gradient-anime' : 'text-brand-text'}`}>
@@ -80,14 +96,21 @@ export default function Row({
           </>
         )}
 
-        <div ref={rowRef} className="scroll-row hide-scrollbar px-4 sm:px-6 lg:px-8 flex gap-5">
+        <motion.div 
+          ref={rowRef} 
+          className="scroll-row hide-scrollbar px-4 sm:px-6 lg:px-8 flex gap-5"
+          variants={containerVariants}
+          initial="hidden"
+          whileInView="show"
+          viewport={{ once: true }}
+        >
           {isLoading
             ? Array.from({ length: 8 }).map((_, i) => <SkeletonCard key={i} variant={variant} />)
             : movies.map((movie) => (
                 <MovieCard key={movie.id} movie={movie} variant={variant} />
               ))}
-        </div>
+        </motion.div>
       </div>
-    </section>
+    </motion.section>
   )
 }
