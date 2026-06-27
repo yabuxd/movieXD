@@ -271,18 +271,19 @@ export default function MovieDetails() {
               </button>
               
               <button
+                type="button"
                 id="detail-favorite-btn"
                 onClick={() => {
                   if (!isAuthenticated) {
                     navigate('/login', { state: { from: location } })
                     return
                   }
-                  if (toggleFavorite) toggleFavorite(movie)
+                  toggleFavorite(movie)
                 }}
-                className={`btn-secondary text-base ${isFavorite && isFavorite(movie.id) ? 'border-red-500/50 text-white bg-red-500 hover:border-red-600 hover:bg-red-600' : 'border-gray-600 hover:border-red-500 hover:text-red-400'}`}
-                title={isFavorite && isFavorite(movie.id) ? 'Remove from Favorites' : 'Add to Favorites'}
+                className={`btn-secondary text-base ${isFavorite(movie.id) ? 'border-red-500/50 text-white bg-red-500 hover:border-red-600 hover:bg-red-600' : 'border-gray-600 hover:border-red-500 hover:text-red-400'}`}
+                title={isFavorite(movie.id) ? 'Remove from Favorites' : 'Add to Favorites'}
               >
-                {isFavorite && isFavorite(movie.id) ? (
+                {isFavorite(movie.id) ? (
                   <>
                     <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
                       <path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />

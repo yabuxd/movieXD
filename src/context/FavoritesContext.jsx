@@ -1,71 +1,76 @@
-import { createContext, useContext, useState, useEffect } from 'react'
+import { createContext, useContext, useState, useCallback, useEffect } from 'react'
 import { useAuth } from './AuthContext'
 
-const FavoritesContext = createContext()
+const FavoritesContext = createContext(null)
 
-export function useFavorites() {
-  return useContext(FavoritesContext)
+function toFavoriteItem(movie) {
+  return {
+    id: String(movie.id),
+    title: movie.title || '',
+    poster_path: movie.poster_path || '',
+    release_date: movie.release_date || '',
+    vote_average: movie.vote_average || 0,
+    addedAt: Date.now(),
+  }
 }
 
 export function FavoritesProvider({ children }) {
-  const { currentUser, isAuthenticated } = useAuth()
+  const { currentUser } = useAuth()
+  const storageKey = currentUser ? `favorites_${currentUser.id}` : 'favorites'
+
   const [favorites, setFavorites] = useState([])
+  const [loadedKey, setLoadedKey] = useState('')
 
   useEffect(() => {
-    if (isAuthenticated && currentUser) {
-      const stored = localStorage.getItem(`favorites_${currentUser.id}`)
-      if (stored) {
-        try {
-          setFavorites(JSON.parse(stored))
-        } catch (e) {
-          console.error('Failed to parse favorites')
-          setFavorites([])
-        }
-      } else {
-        setFavorites([])
+    const saved = localStorage.getItem(storageKey)
+    setFavorites(saved ? JSON.parse(saved) : [])
+    setLoadedKey(storageKey)
+  }, [storageKey])
+
+  useEffect(() => {
+    if (loadedKey === storageKey) {
+      localStorage.setItem(storageKey, JSON.stringify(favorites))
+    }
+  }, [favorites, storageKey, loadedKey])
+
+  const isFavorite = useCallback(
+    (id) => favorites.some((m) => String(m.id) === String(id)),
+    [favorites]
+  )
+
+  const addToFavorites = useCallback((movie) => {
+    setFavorites((prev) => {
+      const stringId = String(movie.id)
+      if (prev.some((m) => String(m.id) === stringId)) return prev
+      return [toFavoriteItem(movie), ...prev]
+    })
+  }, [])
+
+  const removeFromFavorites = useCallback((id) => {
+    setFavorites((prev) => prev.filter((m) => String(m.id) !== String(id)))
+  }, [])
+
+  const toggleFavorite = useCallback((movie) => {
+    setFavorites((prev) => {
+      const stringId = String(movie.id)
+      if (prev.some((m) => String(m.id) === stringId)) {
+        return prev.filter((m) => String(m.id) !== stringId)
       }
-    } else {
-      setFavorites([])
-    }
-  }, [currentUser, isAuthenticated])
-
-  const saveFavorites = (newFavorites) => {
-    setFavorites(newFavorites)
-    if (currentUser) {
-      localStorage.setItem(`favorites_${currentUser.id}`, JSON.stringify(newFavorites))
-    }
-  }
-
-  const toggleFavorite = (movie) => {
-    const exists = favorites.find(m => m.id === movie.id)
-    if (exists) {
-      saveFavorites(favorites.filter(m => m.id !== movie.id))
-    } else {
-      saveFavorites([
-        {
-          id: movie.id,
-          title: movie.title,
-          poster_path: movie.poster_path,
-          release_date: movie.release_date,
-          vote_average: movie.vote_average,
-          addedAt: Date.now()
-        },
-        ...favorites
-      ])
-    }
-  }
-
-  const removeFromFavorites = (id) => {
-    saveFavorites(favorites.filter(m => m.id !== id))
-  }
-
-  const isFavorite = (id) => {
-    return favorites.some(m => m.id === id)
-  }
+      return [toFavoriteItem(movie), ...prev]
+    })
+  }, [])
 
   return (
-    <FavoritesContext.Provider value={{ favorites, toggleFavorite, removeFromFavorites, isFavorite }}>
+    <FavoritesContext.Provider
+      value={{ favorites, isFavorite, addToFavorites, removeFromFavorites, toggleFavorite }}
+    >
       {children}
     </FavoritesContext.Provider>
   )
+}
+
+export function useFavorites() {
+  const ctx = useContext(FavoritesContext)
+  if (!ctx) throw new Error('useFavorites must be used within FavoritesProvider')
+  return ctx
 }

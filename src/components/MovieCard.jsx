@@ -19,7 +19,7 @@ const MovieCard = memo(function MovieCard({ movie, variant = 'default' }) {
   const navigate = useNavigate()
   const location = useLocation()
   const inWatchlist = isInWatchlist(movie.id)
-  const isFav = isFavorite ? isFavorite(movie.id) : false
+  const isFav = isFavorite(movie.id)
   const [imgLoaded, setImgLoaded] = useState(false)
   const [imgError, setImgError] = useState(false)
   const isAnime = variant === 'anime'
@@ -40,12 +40,11 @@ const MovieCard = memo(function MovieCard({ movie, variant = 'default' }) {
   const glowClass = isAnime ? 'poster-glow-anime' : 'poster-glow'
   const hoverTitleColor = isAnime ? 'group-hover:text-brand-gold-muted' : 'group-hover:text-brand-gold'
   const accentBg = isAnime ? 'bg-brand-gold-muted' : 'bg-brand-gold'
-  const accentText = isAnime ? 'text-brand-gold-muted' : 'text-brand-gold'
 
   const itemVariants = {
     hidden: { opacity: 0, scale: 0.8 },
     show: { opacity: 1, scale: 1 },
-    exit: { opacity: 0, scale: 0.8 }
+    exit: { opacity: 0, scale: 0.8 },
   }
 
   return (
@@ -56,12 +55,12 @@ const MovieCard = memo(function MovieCard({ movie, variant = 'default' }) {
       whileHover={{ y: -6, scale: 1.05 }}
       transition={{ duration: 0.3, ease: 'easeOut' }}
     >
-      <Link to={`/movie/${movie.id}`} className="block">
-        <div
-          className={`relative rounded-2xl overflow-hidden bg-brand-card aspect-[2/3] shadow-card border border-transparent group-hover:border-[#D4AF37]/50 transition-all duration-300 ${glowClass} ${
-            isAnime ? 'ring-1 ring-brand-gold-muted/10' : 'ring-1 ring-white/[0.06]'
-          }`}
-        >
+      <div
+        className={`relative rounded-2xl overflow-hidden bg-brand-card aspect-[2/3] shadow-card border border-transparent group-hover:border-[#D4AF37]/50 transition-all duration-300 ${glowClass} ${
+          isAnime ? 'ring-1 ring-brand-gold-muted/10' : 'ring-1 ring-black/[0.06] dark:ring-white/[0.06]'
+        }`}
+      >
+        <Link to={`/movie/${movie.id}`} className="absolute inset-0 z-0 block">
           {!imgLoaded && !imgError && (
             <div className="absolute inset-0 skeleton rounded-2xl" />
           )}
@@ -89,81 +88,78 @@ const MovieCard = memo(function MovieCard({ movie, variant = 'default' }) {
               <span className="text-brand-muted text-xs leading-tight">{movie.title}</span>
             </div>
           )}
+        </Link>
 
-          <div className="absolute inset-0 bg-card-gradient opacity-0 group-hover:opacity-100 transition-opacity duration-400 rounded-2xl" />
+        <div className="absolute inset-x-0 bottom-0 h-[40%] bg-card-gradient opacity-40 group-hover:opacity-100 transition-opacity duration-400 rounded-b-2xl pointer-events-none z-[1]" />
 
-          {rating && (
-            <div className="absolute top-3 left-3 flex items-center gap-1 bg-[#121212]/95 border border-[#D4AF37]/40 rounded-lg px-2 py-1 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-1 group-hover:translate-y-0">
-              <svg className="w-3 h-3 text-[#D4AF37]" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-              </svg>
-              <span className="text-[#D4AF37] text-[11px] font-semibold">{rating}</span>
-            </div>
+        {rating && (
+          <div className="absolute top-3 left-3 z-20 flex items-center gap-1 bg-[#121212]/95 border border-[#D4AF37]/40 rounded-lg px-2 py-1 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-1 group-hover:translate-y-0 pointer-events-none">
+            <svg className="w-3 h-3 text-[#D4AF37]" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+            </svg>
+            <span className="text-[#D4AF37] text-[11px] font-semibold">{rating}</span>
+          </div>
+        )}
+
+        <button
+          type="button"
+          id={`watchlist-toggle-${movie.id}`}
+          onClick={() => {
+            if (!isAuthenticated) {
+              navigate('/login', { state: { from: location } })
+              return
+            }
+            toggleWatchlist(movie)
+          }}
+          className={`absolute top-3 right-3 z-20 w-8 h-8 rounded-full glass flex items-center justify-center transition-all duration-300 opacity-0 group-hover:opacity-100 translate-y-1 group-hover:translate-y-0 ${
+            inWatchlist ? `${accentBg} text-brand-bg` : 'text-brand-muted hover:text-brand-text'
+          }`}
+          aria-label={inWatchlist ? 'Remove from watchlist' : 'Add to watchlist'}
+        >
+          {inWatchlist ? (
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+            </svg>
+          ) : (
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+            </svg>
           )}
+        </button>
 
-          <button
-            id={`watchlist-toggle-${movie.id}`}
-            onClick={(e) => {
-              e.preventDefault()
-              if (!isAuthenticated) {
-                navigate('/login', { state: { from: location } })
-                return
-              }
-              toggleWatchlist(movie)
-            }}
-            className={`absolute top-3 right-3 w-8 h-8 rounded-full glass flex items-center justify-center transition-all duration-300 opacity-0 group-hover:opacity-100 translate-y-1 group-hover:translate-y-0 ${
-              inWatchlist ? `${accentBg} text-brand-bg` : 'text-brand-muted hover:text-brand-text'
-            }`}
-            aria-label={inWatchlist ? 'Remove from watchlist' : 'Add to watchlist'}
-          >
-            {inWatchlist ? (
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
-              </svg>
-            ) : (
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-              </svg>
-            )}
-          </button>
+        <button
+          type="button"
+          id={`favorite-toggle-${movie.id}`}
+          onClick={() => toggleFavorite(movie)}
+          className={`absolute top-12 right-3 z-20 w-8 h-8 rounded-full glass flex items-center justify-center transition-all duration-300 ${
+            isFav
+              ? 'bg-red-500 text-white opacity-100'
+              : 'text-brand-muted hover:text-red-400 opacity-0 group-hover:opacity-100 translate-y-1 group-hover:translate-y-0'
+          }`}
+          aria-label={isFav ? 'Remove from favorites' : 'Add to favorites'}
+          aria-pressed={isFav}
+        >
+          {isFav ? (
+            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+            </svg>
+          ) : (
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+            </svg>
+          )}
+        </button>
 
-          <button
-            id={`favorite-toggle-${movie.id}`}
-            onClick={(e) => {
-              e.preventDefault()
-              if (!isAuthenticated) {
-                navigate('/login', { state: { from: location } })
-                return
-              }
-              if (toggleFavorite) toggleFavorite(movie)
-            }}
-            className={`absolute top-12 right-3 w-8 h-8 rounded-full glass flex items-center justify-center transition-all duration-300 opacity-0 group-hover:opacity-100 translate-y-1 group-hover:translate-y-0 ${
-              isFav ? `bg-red-500 text-white` : 'text-brand-muted hover:text-red-400'
-            }`}
-            aria-label={isFav ? 'Remove from favorites' : 'Add to favorites'}
-          >
-            {isFav ? (
-              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-              </svg>
-            ) : (
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-              </svg>
-            )}
-          </button>
-
-          <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300">
-            <div className="w-14 h-14 glass rounded-full flex items-center justify-center shadow-glow-gold">
-              <svg className="w-6 h-6 text-brand-text ml-0.5" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M8 5v14l11-7z" />
-              </svg>
-            </div>
+        <div className="absolute inset-0 z-[1] flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none">
+          <div className="w-14 h-14 glass rounded-full flex items-center justify-center shadow-glow-gold">
+            <svg className="w-6 h-6 text-brand-text ml-0.5" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M8 5v14l11-7z" />
+            </svg>
           </div>
         </div>
-      </Link>
+      </div>
 
-      <div className="mt-3 px-0.5">
+      <Link to={`/movie/${movie.id}`} className="block mt-3 px-0.5">
         <p className={`text-brand-text text-sm font-semibold leading-tight truncate transition-colors duration-200 ${hoverTitleColor}`}>
           {movie.title}
         </p>
@@ -182,7 +178,7 @@ const MovieCard = memo(function MovieCard({ movie, variant = 'default' }) {
             </span>
           ))}
         </div>
-      </div>
+      </Link>
     </motion.div>
   )
 })

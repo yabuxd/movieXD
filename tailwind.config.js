@@ -30,11 +30,11 @@ export default {
         display: ['Inter', 'system-ui', 'sans-serif'],
       },
       backgroundImage: {
-        'hero-gradient': 'linear-gradient(90deg, var(--color-bg) 0%, rgba(0,0,0,0.5) 40%, transparent 100%)',
+        'hero-gradient': 'var(--hero-gradient)',
         'hero-bottom': 'linear-gradient(to top, var(--color-bg) 0%, transparent 100%)',
-        'card-gradient': 'linear-gradient(to top, var(--color-bg) 0%, transparent 60%)',
+        'card-gradient': 'var(--card-gradient)',
         'anime-gradient': 'linear-gradient(135deg, rgba(212, 175, 55, 0.15) 0%, rgba(212, 175, 55, 0.2) 100%)',
-        'cinematic-mesh': 'radial-gradient(ellipse at 20% 50%, rgba(212, 175, 55, 0.05) 0%, transparent 50%), radial-gradient(ellipse at 80% 20%, rgba(212, 175, 55, 0.04) 0%, transparent 50%)',
+        'cinematic-mesh': 'var(--color-mesh)',
       },
       boxShadow: {
         'glow-gold': '0 0 20px rgba(212, 175, 55, 0.2)',

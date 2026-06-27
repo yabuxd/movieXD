@@ -4,15 +4,22 @@
 
 @layer base {
   :root {
-    --color-bg: #ffffff;
-    --color-surface: #f4f4f4;
+    --color-bg: #f5f0e8;
+    --color-surface: #ebe4d8;
     --color-text: #111111;
     --color-text-muted: #555555;
     --color-accent: #D4AF37;
     --color-accent-hover: #bda030;
     --color-accent-muted: #8c7322;
     --color-border: rgba(0, 0, 0, 0.1);
-    --vignette-shadow: inset 0 0 100px rgba(0, 0, 0, 0.05);
+    --vignette-shadow: inset 0 0 120px rgba(212, 175, 55, 0.06);
+    --color-bg-gradient: linear-gradient(160deg, #ede8df 0%, #f7f3ee 35%, #faf8f5 70%, #ffffff 100%);
+    --color-mesh: radial-gradient(ellipse at 15% 40%, rgba(212, 175, 55, 0.08) 0%, transparent 55%),
+                  radial-gradient(ellipse at 85% 15%, rgba(212, 175, 55, 0.06) 0%, transparent 50%),
+                  radial-gradient(ellipse at 50% 90%, rgba(235, 228, 216, 0.5) 0%, transparent 60%);
+    --hero-gradient: linear-gradient(90deg, var(--color-bg) 0%, rgba(245, 240, 232, 0.85) 30%, rgba(245, 240, 232, 0.4) 60%, transparent 100%);
+    --card-gradient: linear-gradient(to top, rgba(196, 186, 170, 0.82) 0%, rgba(196, 186, 170, 0.25) 45%, transparent 68%);
+    --skeleton-gradient: linear-gradient(90deg, #ddd4c4 25%, #ebe4d8 50%, #ddd4c4 75%);
   }
 
   .dark {
@@ -25,6 +32,12 @@
     --color-accent-muted: #8c7322;
     --color-border: rgba(255, 255, 255, 0.08);
     --vignette-shadow: inset 0 0 100px rgba(0, 0, 0, 0.85);
+    --color-bg-gradient: none;
+    --color-mesh: radial-gradient(ellipse at 20% 50%, rgba(212, 175, 55, 0.05) 0%, transparent 50%),
+                  radial-gradient(ellipse at 80% 20%, rgba(212, 175, 55, 0.04) 0%, transparent 50%);
+    --hero-gradient: linear-gradient(90deg, var(--color-bg) 0%, rgba(0, 0, 0, 0.5) 40%, transparent 100%);
+    --card-gradient: linear-gradient(to top, var(--color-bg) 0%, transparent 60%);
+    --skeleton-gradient: linear-gradient(90deg, #121212 25%, #1A1A1A 50%, #121212 75%);
   }
 
   *, *::before, *::after {
@@ -39,6 +52,8 @@
 
   body {
     background-color: var(--color-bg);
+    background-image: var(--color-bg-gradient);
+    background-attachment: fixed;
     color: var(--color-text);
     font-family: 'Inter', system-ui, sans-serif;
     -webkit-font-smoothing: antialiased;
@@ -63,7 +78,7 @@
   }
 
   ::-webkit-scrollbar-track {
-    background: #121212;
+    background: var(--color-surface);
   }
 
   ::-webkit-scrollbar-thumb {
@@ -129,7 +144,7 @@
     background-color: var(--color-accent-muted);
     transform: translateY(-2px);
     box-shadow: 0 0 20px rgba(229, 9, 20, 0.15);
-  }
+  }     
 
   .badge {
     @apply inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-xs font-semibold;
@@ -154,7 +169,7 @@
   }
 
   .skeleton {
-    background: linear-gradient(90deg, #121212 25%, #1A1A1A 50%, #121212 75%);
+    background: var(--skeleton-gradient);
     background-size: 200% 100%;
     animation: shimmer 2s linear infinite;
   }

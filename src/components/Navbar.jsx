@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { NavLink, Link, useNavigate, useLocation } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useWatchlist } from '../context/WatchlistContext'
+import { useFavorites } from '../context/FavoritesContext'
 import { useAuth } from '../context/AuthContext'
 import { useTheme } from '../context/ThemeContext'
 import GenreDropdown from './GenreDropdown'
@@ -12,6 +13,7 @@ export default function Navbar() {
   const [searchOpen, setSearchOpen] = useState(false)
   const [query, setQuery] = useState('')
   const { watchlist } = useWatchlist()
+  const { favorites } = useFavorites()
   const { currentUser, isAuthenticated, logout } = useAuth()
   const { isDarkMode, toggleTheme } = useTheme()
   const [dropdownOpen, setDropdownOpen] = useState(false)
@@ -124,6 +126,11 @@ export default function Navbar() {
                 aria-label="My Favorites"
               >
                 <HeartIcon />
+                {favorites.length > 0 && (
+                  <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center">
+                    {favorites.length > 9 ? '9+' : favorites.length}
+                  </span>
+                )}
               </Link>
 
               <Link

@@ -13,7 +13,7 @@ export default function Home() {
   const [topRated, setTopRated] = useState([])
   const [upcoming, setUpcoming] = useState([])
   const [anime, setAnime] = useState([])
-  const [heroMovie, setHeroMovie] = useState(null)
+  const [heroMovies, setHeroMovies] = useState([])
   const [animeHero, setAnimeHero] = useState(null)
   const { history } = useContinueWatching()
 
@@ -63,9 +63,12 @@ export default function Home() {
         setUpcoming(upcomingData)
         setAnime(animeData)
 
-        if (trendingData.length > 0) {
-          setHeroMovie(trendingData[0])
-        }
+        const featured = [...trendingData, ...popularData].filter(
+          (movie, i, list) =>
+            movie.backdrop_path &&
+            list.findIndex((m) => m.id === movie.id) === i
+        )
+        setHeroMovies(featured.slice(0, 10))
         if (animeData.length > 0) {
           setAnimeHero(animeData[0])
         }
@@ -99,8 +102,8 @@ export default function Home() {
         <meta name="description" content="Discover, watch, and track the best movies and shows on MovieXD." />
       </Helmet>
       <div className="min-h-screen bg-brand-bg">
-      {heroMovie ? (
-        <HeroBanner movie={heroMovie} />
+      {heroMovies.length > 0 ? (
+        <HeroBanner movies={heroMovies} />
       ) : (
         <div className="w-full min-h-[92vh] md:min-h-screen bg-brand-surface animate-pulse" />
       )}

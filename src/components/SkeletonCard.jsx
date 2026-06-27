@@ -5,7 +5,7 @@ export default function SkeletonCard({ variant = 'default' }) {
     <div className="flex-shrink-0 w-40 sm:w-48 md:w-52">
       <div
         className={`relative rounded-2xl overflow-hidden aspect-[2/3] skeleton shadow-card ${
-          isAnime ? 'ring-1 ring-brand-gold-muted/10' : 'ring-1 ring-white/[0.06]'
+          isAnime ? 'ring-1 ring-brand-gold-muted/10' : 'ring-1 ring-black/[0.06] dark:ring-white/[0.06]'
         }`}
       />
       <div className="mt-3 px-0.5 space-y-2">
