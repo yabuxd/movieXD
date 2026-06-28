@@ -5,6 +5,7 @@ import {
   signInWithPopup,
   signOut,
   onAuthStateChanged,
+  sendPasswordResetEmail,
 } from 'firebase/auth'
 import { auth, googleProvider, isConfigured } from '../services/firebase'
 
@@ -159,6 +160,17 @@ export function AuthProvider({ children }) {
     })
   }
 
+  // ── RESET PASSWORD ──────────────────────────────────────────────────────────
+  const resetPassword = (email) => {
+    if (!isConfigured) {
+      return Promise.reject(new Error('Password reset requires Firebase. Please use email/password sign-in.'))
+    }
+    return sendPasswordResetEmail(auth, email)
+      .catch((err) => {
+        throw new Error(getFirebaseErrorMessage(err.code))
+      })
+  }
+
   // ── LOGOUT ──────────────────────────────────────────────────────────────────
   const logout = () => {
     const doLogout = isConfigured ? signOut(auth) : Promise.resolve()
@@ -179,6 +191,7 @@ export function AuthProvider({ children }) {
         login,
         loginWithGoogle,
         register,
+        resetPassword,
         logout,
         setError,
       }}
@@ -222,6 +235,8 @@ function getFirebaseErrorMessage(code) {
       return 'Pop-up was blocked by your browser. Please allow pop-ups for this site.'
     case 'auth/network-request-failed':
       return 'Network error. Please check your connection.'
+    case 'auth/too-many-requests':
+      return 'Too many attempts. Please wait a moment and try again.'
     case 'auth/unauthorized-domain':
       return 'This domain is not authorised in Firebase. Add localhost to Firebase Console → Authentication → Settings → Authorised domains.'
     case 'auth/operation-not-allowed':
