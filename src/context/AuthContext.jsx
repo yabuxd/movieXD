@@ -165,7 +165,15 @@ export function AuthProvider({ children }) {
     if (!isConfigured) {
       return Promise.reject(new Error('Password reset requires Firebase. Please use email/password sign-in.'))
     }
-    return sendPasswordResetEmail(auth, email)
+
+    // continueUrl tells Firebase where to send the user after they reset their password.
+    // window.location.origin works on both localhost and movyxd.netlify.app automatically.
+    const actionCodeSettings = {
+      url: `${window.location.origin}/login`,
+      handleCodeInApp: false,
+    }
+
+    return sendPasswordResetEmail(auth, email, actionCodeSettings)
       .catch((err) => {
         throw new Error(getFirebaseErrorMessage(err.code))
       })
