@@ -5,7 +5,7 @@ import { useAuth } from '../context/AuthContext'
 export default function Login() {
   const navigate = useNavigate()
   const location = useLocation()
-  const { login, loading, error, setError } = useAuth()
+  const { login, loginWithGoogle, loading, error, setError } = useAuth()
   const [form, setForm] = useState({ email: '', password: '' })
 
   const from = location.state?.from?.pathname || '/'
@@ -19,6 +19,15 @@ export default function Login() {
     e.preventDefault()
     try {
       await login(form.email, form.password)
+      navigate(from, { replace: true })
+    } catch (err) {
+      // Error is stored in AuthContext and displayed below
+    }
+  }
+
+  const handleGoogleLogin = async () => {
+    try {
+      await loginWithGoogle()
       navigate(from, { replace: true })
     } catch (err) {
       // Error is stored in AuthContext and displayed below
@@ -145,10 +154,12 @@ export default function Login() {
             </div>
 
             {/* Social Buttons */}
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 gap-3">
               <button
                 type="button"
                 id="auth-google-btn"
+                onClick={handleGoogleLogin}
+                disabled={loading}
                 className="btn-secondary justify-center py-2.5 text-sm rounded-xl"
               >
                 <svg className="w-4 h-4" viewBox="0 0 24 24">
@@ -157,17 +168,7 @@ export default function Login() {
                   <path fill="#4A90E2" d="M19.834192,20.9995801 C22.0291676,18.9520994 23.4545455,15.903663 23.4545455,12 C23.4545455,11.2909091 23.3454545,10.5272727 23.1818182,9.81818182 L12,9.81818182 L12,14.4545455 L18.4363636,14.4545455 C18.1187732,16.013626 17.2662994,17.2212117 16.0407269,18.0125889 L19.834192,20.9995801 Z"/>
                   <path fill="#FBBC05" d="M5.27698177,14.2678769 C5.03832634,13.556323 4.90909091,12.7937589 4.90909091,12 C4.90909091,11.2182781 5.03443647,10.4668121 5.26620003,9.76452941 L1.23999023,6.65002441 C0.43658717,8.26043162 0,10.0753848 0,12 C0,13.9159572 0.435448291,15.7350961 1.23746264,17.3349879 L5.27698177,14.2678769 Z"/>
                 </svg>
-                Google
-              </button>
-              <button
-                type="button"
-                id="auth-github-btn"
-                className="btn-secondary justify-center py-2.5 text-sm rounded-xl"
-              >
-                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M12 0C5.374 0 0 5.373 0 12c0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0112 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.627-5.373-12-12-12z"/>
-                </svg>
-                GitHub
+                Continue with Google
               </button>
             </div>
           </form>
