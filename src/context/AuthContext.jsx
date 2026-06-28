@@ -108,6 +108,7 @@ export function AuthProvider({ children }) {
         return mapFirebaseUser(result.user)
       })
       .catch((err) => {
+        console.error('[Google Sign-In] Firebase error code:', err.code, err.message)
         const message = getFirebaseErrorMessage(err.code)
         setError(message)
         setLoading(false)
@@ -215,12 +216,19 @@ function getFirebaseErrorMessage(code) {
     case 'auth/invalid-email':
       return 'Please enter a valid email address.'
     case 'auth/popup-closed-by-user':
+    case 'auth/cancelled-popup-request':
       return 'Google sign-in was cancelled.'
     case 'auth/popup-blocked':
       return 'Pop-up was blocked by your browser. Please allow pop-ups for this site.'
     case 'auth/network-request-failed':
       return 'Network error. Please check your connection.'
+    case 'auth/unauthorized-domain':
+      return 'This domain is not authorised in Firebase. Add localhost to Firebase Console → Authentication → Settings → Authorised domains.'
+    case 'auth/operation-not-allowed':
+      return 'Google sign-in is not enabled. Enable it in Firebase Console → Authentication → Sign-in method → Google.'
+    case 'auth/internal-error':
+      return 'Firebase internal error. Check your API key and project configuration.'
     default:
-      return 'An authentication error occurred. Please try again.'
+      return `Authentication error (${code || 'unknown'}). Check the browser console for details.`
   }
 }

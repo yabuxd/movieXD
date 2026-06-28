@@ -1,14 +1,20 @@
 import axios from 'axios'
 
-const TMDB_API_KEY = import.meta.env.VITE_TMDB_API_KEY || ''
-const IS_PROD = import.meta.env.PROD
-
-// Dev: call TMDB directly with .env key
-// Prod: Netlify Function proxy (/api/tmdb/* → TMDB) keeps key server-side
+/**
+ * All TMDB requests go through /api/tmdb/* regardless of environment.
+ *
+ * In development:  Vite proxies /api/tmdb → tmdb-proxy Netlify function via
+ *                  the vite.config.js proxy (see below), so the key stays
+ *                  in .env on the server side and is never in the browser bundle.
+ *
+ * In production:   Netlify routes /api/tmdb/* to the serverless function
+ *                  which injects the key server-side.
+ *
+ * The VITE_TMDB_API_KEY is intentionally NOT used here anymore.
+ */
 const tmdbApi = axios.create({
-  baseURL: IS_PROD ? '/api/tmdb' : 'https://api.themoviedb.org/3',
-  params: IS_PROD ? {} : { api_key: TMDB_API_KEY },
-  timeout: 15000, // 15 second timeout
+  baseURL: '/api/tmdb',
+  timeout: 15000,
 })
 
 export const getTrending = async () => {
@@ -17,9 +23,7 @@ export const getTrending = async () => {
 }
 
 export const getPopular = async (page = 1) => {
-  const response = await tmdbApi.get('/movie/popular', {
-    params: { page }
-  })
+  const response = await tmdbApi.get('/movie/popular', { params: { page } })
   return response.data
 }
 
@@ -34,17 +38,13 @@ export const getUpcoming = async () => {
 }
 
 export const searchMovies = async (query, page = 1) => {
-  const response = await tmdbApi.get('/search/movie', {
-    params: { query, page },
-  })
+  const response = await tmdbApi.get('/search/movie', { params: { query, page } })
   return response.data
 }
 
 export const getMovieDetails = async (id) => {
   const response = await tmdbApi.get(`/movie/${id}`, {
-    params: {
-      append_to_response: 'videos,credits,similar,recommendations',
-    },
+    params: { append_to_response: 'videos,credits,similar,recommendations' },
   })
   return response.data
 }

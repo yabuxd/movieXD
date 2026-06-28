@@ -5,8 +5,43 @@
 [build.environment]
   NODE_VERSION = "20"
 
-# SPA fallback for client-side routing
+# ── HTTPS enforcement ────────────────────────────────────────────────────────
 [[redirects]]
-  from = "/*"
-  to = "/index.html"
+  from    = "http://movyxd.netlify.app/*"
+  to      = "https://movyxd.netlify.app/:splat"
+  status  = 301
+  force   = true
+
+# SPA fallback — must be last
+[[redirects]]
+  from   = "/*"
+  to     = "/index.html"
   status = 200
+
+# ── Security headers on all responses ───────────────────────────────────────
+[[headers]]
+  for = "/*"
+  [headers.values]
+    # Force HTTPS for 1 year, include subdomains
+    Strict-Transport-Security = "max-age=31536000; includeSubDomains; preload"
+
+    # Prevent clickjacking
+    X-Frame-Options = "DENY"
+
+    # Prevent MIME sniffing
+    X-Content-Type-Options = "nosniff"
+
+    # Minimal referrer info
+    Referrer-Policy = "strict-origin-when-cross-origin"
+
+    # Disable browser features not needed
+    Permissions-Policy = "camera=(), microphone=(), geolocation=()"
+
+    # Content Security Policy
+    # - Scripts: only from same origin (Vite bundles everything)
+    # - Styles: same origin + Google Fonts
+    # - Fonts: Google Fonts CDN
+    # - Images: same origin + TMDB poster CDN + Google user avatars
+    # - Connect: Firebase Auth + TMDB API
+    # - Frames: Google sign-in popup
+    Content-Security-Policy = "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https://image.tmdb.org https://*.googleusercontent.com; connect-src 'self' https://*.firebaseapp.com https://*.googleapis.com https://api.themoviedb.org https://identitytoolkit.googleapis.com https://securetoken.googleapis.com; frame-src https://accounts.google.com; object-src 'none'; base-uri 'self'; form-action 'self';"
