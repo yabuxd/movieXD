@@ -32,6 +32,7 @@ export default function SeriesDetails() {
   const {
     source: playerSource,
     embedUrl: playerEmbedUrl,
+    watchUrl: playerWatchUrl,
     isResolving: isPlayerResolving,
     error: playerError,
     sources: playerSources,
@@ -185,8 +186,8 @@ export default function SeriesDetails() {
             )}
           </div>
 
-          <div className="flex flex-col lg:flex-row lg:items-stretch gap-4 lg:gap-6">
-            <div className="order-2 lg:order-1 w-full lg:w-96 lg:shrink-0 flex flex-col min-h-0 max-h-[50vh] lg:max-h-none lg:self-stretch">
+          <div className="grid grid-cols-1 lg:grid-cols-[minmax(280px,320px)_1fr] gap-4 lg:gap-6 items-stretch">
+            <div className="order-2 lg:order-1 min-h-0 h-full max-h-[50vh] lg:max-h-none">
               <EpisodeSidebar
                 seasons={series.seasons || []}
                 episodesBySeason={episodesBySeason}
@@ -201,16 +202,16 @@ export default function SeriesDetails() {
               />
             </div>
 
-            <div className="order-1 lg:order-2 flex-1 min-w-0 rounded-2xl overflow-hidden border border-brand-border shadow-2xl">
+            <div className="order-1 lg:order-2 min-w-0 rounded-2xl overflow-hidden border border-brand-border shadow-2xl">
               <VideoPlayer
                 title={playerTitle}
                 embedUrl={playerEmbedUrl}
+                watchUrl={playerWatchUrl}
                 isResolving={isPlayerResolving}
                 error={playerError}
                 source={playerSource}
                 sources={playerSources}
                 onSwitchSource={switchSource}
-                className="h-full"
               />
             </div>
           </div>

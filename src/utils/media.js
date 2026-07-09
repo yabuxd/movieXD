@@ -18,6 +18,28 @@ export function getMediaPath(item) {
   return `/movie/${item.id}`
 }
 
+const YOUTUBE_EMBED_BASE = 'https://www.youtube-nocookie.com/embed'
+
+export function buildYoutubeEmbedUrl(key, { searchList = null, autoplay = true } = {}) {
+  const params = new URLSearchParams()
+  if (autoplay) params.set('autoplay', '1')
+  params.set('rel', '0')
+  params.set('modestbranding', '1')
+
+  if (searchList) {
+    params.set('listType', 'search')
+    params.set('list', searchList)
+    return `${YOUTUBE_EMBED_BASE}?${params.toString()}`
+  }
+
+  if (!key) return null
+  return `${YOUTUBE_EMBED_BASE}/${key}?${params.toString()}`
+}
+
+export function buildYoutubeWatchUrl(key) {
+  return key ? `https://www.youtube.com/watch?v=${key}` : null
+}
+
 export function pickYoutubeTrailer(videos) {
   const results = videos?.results ?? (Array.isArray(videos) ? videos : [])
   const match =
@@ -31,8 +53,8 @@ export function pickYoutubeTrailer(videos) {
     name: match.name,
     type: match.type,
     site: match.site,
-    url: `https://www.youtube.com/embed/${match.key}?autoplay=1&rel=0`,
-    watchUrl: `https://www.youtube.com/watch?v=${match.key}`,
+    url: buildYoutubeEmbedUrl(match.key),
+    watchUrl: buildYoutubeWatchUrl(match.key),
   }
 }
 

@@ -26,6 +26,7 @@ export default function MovieDetails() {
   const {
     source: playerSource,
     embedUrl: playerEmbedUrl,
+    watchUrl: playerWatchUrl,
     isResolving: isPlayerResolving,
     error: playerError,
     sources: playerSources,
@@ -123,6 +124,7 @@ export default function MovieDetails() {
             <VideoPlayer
               title={title}
               embedUrl={playerEmbedUrl}
+              watchUrl={playerWatchUrl}
               isResolving={isPlayerResolving}
               error={playerError}
               source={playerSource}

@@ -1,4 +1,5 @@
 import { useCallback, useState } from 'react'
+import { buildYoutubeEmbedUrl, buildYoutubeWatchUrl } from '../utils/media'
 
 const cleanTitle = (title = '') =>
   title
@@ -42,6 +43,9 @@ export default function useMoviePlayer() {
   const [playerState, setPlayerState] = useState({
     source: null,
     embedUrl: null,
+    watchUrl: null,
+    trailerKey: null,
+    searchQuery: null,
     isResolving: false,
     error: null,
     sources: {
@@ -63,11 +67,13 @@ export default function useMoviePlayer() {
       return
     }
 
-    const trailerUrl = `https://www.youtube.com/embed/${trailerKey}?autoplay=1&rel=0`
+    const trailerUrl = buildYoutubeEmbedUrl(trailerKey)
     setPlayerState((prev) => ({
       ...prev,
       source: 'trailer',
       embedUrl: trailerUrl,
+      watchUrl: buildYoutubeWatchUrl(trailerKey),
+      trailerKey,
       isResolving: false,
       error: null,
       sources: {
@@ -82,6 +88,9 @@ export default function useMoviePlayer() {
       setPlayerState({
         source: null,
         embedUrl: null,
+        watchUrl: null,
+        trailerKey: null,
+        searchQuery: null,
         isResolving: true,
         error: null,
         sources: {
@@ -96,12 +105,9 @@ export default function useMoviePlayer() {
       const searchQuery = episodeLabel
         ? `${title} ${episodeLabel} full episode`
         : `${title}${yearSuffix} ${isTv ? 'full episode' : 'full movie'}`
-      const youtubeUrl = `https://www.youtube.com/embed?listType=search&list=${encodeURIComponent(
-        searchQuery
-      )}&autoplay=1`
-      const trailerUrl = trailerKey
-        ? `https://www.youtube.com/embed/${trailerKey}?autoplay=1&rel=0`
-        : null
+      const youtubeUrl = buildYoutubeEmbedUrl(null, { searchList: searchQuery })
+      const trailerUrl = trailerKey ? buildYoutubeEmbedUrl(trailerKey) : null
+      const trailerWatchUrl = buildYoutubeWatchUrl(trailerKey)
 
       let archiveUrl = null
 
@@ -138,6 +144,7 @@ export default function useMoviePlayer() {
 
         let activeSource = null
         let activeUrl = null
+        let activeWatchUrl = null
 
         if (archiveUrl) {
           activeSource = 'archive'
@@ -145,15 +152,18 @@ export default function useMoviePlayer() {
         } else if (trailerUrl) {
           activeSource = 'trailer'
           activeUrl = trailerUrl
+          activeWatchUrl = trailerWatchUrl
         } else if (youtubeUrl) {
           activeSource = 'youtube'
           activeUrl = youtubeUrl
+          activeWatchUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(searchQuery)}`
         }
 
         if (!activeSource) {
           return {
             source: null,
             embedUrl: null,
+            watchUrl: null,
             isResolving: false,
             error: 'No playback sources available.',
             sources: resolvedSources,
@@ -163,6 +173,9 @@ export default function useMoviePlayer() {
         return {
           source: activeSource,
           embedUrl: activeUrl,
+          watchUrl: activeWatchUrl,
+          trailerKey: trailerKey || null,
+          searchQuery,
           isResolving: false,
           error: null,
           sources: resolvedSources,
@@ -176,10 +189,19 @@ export default function useMoviePlayer() {
     setPlayerState((prev) => {
       const url = prev.sources[sourceType]
       if (!url) return prev
+
+      let watchUrl = null
+      if (sourceType === 'trailer' && prev.trailerKey) {
+        watchUrl = buildYoutubeWatchUrl(prev.trailerKey)
+      } else if (sourceType === 'youtube' && prev.searchQuery) {
+        watchUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(prev.searchQuery)}`
+      }
+
       return {
         ...prev,
         source: sourceType,
         embedUrl: url,
+        watchUrl,
       }
     })
   }, [])
@@ -188,6 +210,9 @@ export default function useMoviePlayer() {
     setPlayerState({
       source: null,
       embedUrl: null,
+      watchUrl: null,
+      trailerKey: null,
+      searchQuery: null,
       isResolving: false,
       error: null,
       sources: {

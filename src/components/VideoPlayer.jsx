@@ -3,6 +3,7 @@ import LoadingSpinner from './LoadingSpinner'
 export default function VideoPlayer({
   title,
   embedUrl,
+  watchUrl,
   isResolving,
   error,
   source,
@@ -10,6 +11,8 @@ export default function VideoPlayer({
   onSwitchSource,
   className = '',
 }) {
+  const isYoutubeSource = source === 'trailer' || source === 'youtube'
+
   return (
     <div className={`relative w-full bg-black flex flex-col ${className}`}>
       {!isResolving && sources && (sources.archive || sources.youtube || sources.trailer) && (
@@ -57,7 +60,7 @@ export default function VideoPlayer({
         </div>
       )}
 
-      <div className="relative w-full aspect-video flex items-center justify-center">
+      <div className="relative w-full aspect-video shrink-0 flex items-center justify-center">
         {isResolving ? (
           <div className="flex flex-col items-center gap-3 p-8">
             <LoadingSpinner />
@@ -75,13 +78,29 @@ export default function VideoPlayer({
             )}
           </div>
         ) : embedUrl ? (
-          <iframe
-            src={embedUrl}
-            title={title}
-            className="absolute inset-0 w-full h-full border-none"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            allowFullScreen
-          />
+          <>
+            <iframe
+              key={embedUrl}
+              src={embedUrl}
+              title={title}
+              className="absolute inset-0 w-full h-full border-none"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+              allowFullScreen
+              referrerPolicy="strict-origin-when-cross-origin"
+            />
+            {isYoutubeSource && watchUrl && (
+              <div className="absolute bottom-3 right-3 z-10">
+                <a
+                  href={watchUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-red-600 text-white hover:bg-red-500 transition-colors shadow-lg"
+                >
+                  Watch on YouTube
+                </a>
+              </div>
+            )}
+          </>
         ) : (
           <p className="text-gray-500">Initializing player...</p>
         )}
