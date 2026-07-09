@@ -41,7 +41,7 @@
     # - Scripts: only from same origin (Vite bundles everything)
     # - Styles: same origin + Google Fonts
     # - Fonts: Google Fonts CDN
-    # - Images: same origin + TMDB poster CDN + Google user avatars
+    # - Images: same origin + TMDB poster CDN + Google avatars
     # - Connect: Firebase Auth + TMDB API
     # - Frames: Google sign-in popup
-    Content-Security-Policy = "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https://image.tmdb.org https://*.googleusercontent.com; connect-src 'self' https://*.firebaseapp.com https://*.googleapis.com https://www.googleapis.com https://api.themoviedb.org https://identitytoolkit.googleapis.com https://securetoken.googleapis.com; frame-src https://accounts.google.com https://*.google.com https://*.firebaseapp.com; object-src 'none'; base-uri 'self'; form-action 'self';"
+    Content-Security-Policy = "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https://image.tmdb.org https://*.googleusercontent.com; connect-src 'self' https://*.firebaseapp.com https://*.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://api.themoviedb.org; frame-src https://accounts.google.com https://*.google.com https://*.firebaseapp.com; object-src 'none'; base-uri 'self'; form-action 'self';"

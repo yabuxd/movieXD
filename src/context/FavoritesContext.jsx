@@ -16,22 +16,22 @@ function toFavoriteItem(movie) {
 
 export function FavoritesProvider({ children }) {
   const { currentUser } = useAuth()
-  const storageKey = currentUser ? `favorites_${currentUser.id}` : 'favorites'
-
   const [favorites, setFavorites] = useState([])
-  const [loadedKey, setLoadedKey] = useState('')
+  const storageKey = currentUser ? `favorites_${currentUser.id}` : null
 
   useEffect(() => {
+    if (!storageKey) {
+      setFavorites([])
+      return
+    }
     const saved = localStorage.getItem(storageKey)
     setFavorites(saved ? JSON.parse(saved) : [])
-    setLoadedKey(storageKey)
   }, [storageKey])
 
   useEffect(() => {
-    if (loadedKey === storageKey) {
-      localStorage.setItem(storageKey, JSON.stringify(favorites))
-    }
-  }, [favorites, storageKey, loadedKey])
+    if (!storageKey) return
+    localStorage.setItem(storageKey, JSON.stringify(favorites))
+  }, [favorites, storageKey])
 
   const isFavorite = useCallback(
     (id) => favorites.some((m) => String(m.id) === String(id)),

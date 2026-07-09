@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react'
 import { motion } from 'framer-motion'
-import { Link, useNavigate, useLocation } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { useWatchlist } from '../context/WatchlistContext'
 import { useAuth } from '../context/AuthContext'
 import { tmdbBackdropProps } from '../utils/tmdbImages'
@@ -28,7 +28,7 @@ function getGenres(movie) {
     .slice(0, 3)
 }
 
-function HeroSlideContent({ movie, isAuthenticated, location, navigate, toggleWatchlist, isInWatchlist }) {
+function HeroSlideContent({ movie, isAuthenticated, toggleWatchlist, isInWatchlist }) {
   const genres = getGenres(movie)
   const saved = isInWatchlist(movie.id)
 
@@ -96,8 +96,6 @@ function HeroSlideContent({ movie, isAuthenticated, location, navigate, toggleWa
 export default function HeroBanner({ movies = [] }) {
   const { isInWatchlist, toggleWatchlist } = useWatchlist()
   const { isAuthenticated } = useAuth()
-  const navigate = useNavigate()
-  const location = useLocation()
   const [position, setPosition] = useState(0)
   const [skipTransition, setSkipTransition] = useState(false)
   const [imgErrors, setImgErrors] = useState({})
@@ -215,8 +213,6 @@ export default function HeroBanner({ movies = [] }) {
               key={`${m.id}-${i}`}
               movie={m}
               isAuthenticated={isAuthenticated}
-              location={location}
-              navigate={navigate}
               toggleWatchlist={toggleWatchlist}
               isInWatchlist={isInWatchlist}
             />

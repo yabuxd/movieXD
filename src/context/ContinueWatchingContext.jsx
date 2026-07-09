@@ -9,34 +9,35 @@ export function useContinueWatching() {
 
 export function ContinueWatchingProvider({ children }) {
   const { currentUser } = useAuth()
-  const storageKey = currentUser ? `continue_watching_${currentUser.id}` : 'continue_watching'
-
   const [history, setHistory] = useState([])
-  const [loadedKey, setLoadedKey] = useState('')
+  const storageKey = currentUser ? `continue_watching_${currentUser.id}` : null
 
   useEffect(() => {
+    if (!storageKey) {
+      setHistory([])
+      return
+    }
     const stored = localStorage.getItem(storageKey)
     if (stored) {
       try {
         setHistory(JSON.parse(stored))
-      } catch (e) {
-        console.error('Failed to parse continue_watching')
+      } catch {
         setHistory([])
       }
     } else {
       setHistory([])
     }
-    setLoadedKey(storageKey)
   }, [storageKey])
 
   const persist = (updated) => {
-    if (loadedKey === storageKey) {
+    if (storageKey) {
       localStorage.setItem(storageKey, JSON.stringify(updated))
     }
     return updated
   }
 
   const addToHistory = (movie) => {
+    if (!currentUser) return
     setHistory((prev) => {
       const filtered = prev.filter((m) => String(m.id) !== String(movie.id))
       const existing = prev.find((m) => String(m.id) === String(movie.id))
@@ -54,6 +55,7 @@ export function ContinueWatchingProvider({ children }) {
   }
 
   const updateProgress = (id, progress) => {
+    if (!currentUser) return
     setHistory((prev) => {
       const updated = prev.map((m) => {
         if (String(m.id) === String(id)) {
@@ -66,6 +68,7 @@ export function ContinueWatchingProvider({ children }) {
   }
 
   const removeFromHistory = (id) => {
+    if (!currentUser) return
     setHistory((prev) => persist(prev.filter((m) => String(m.id) !== String(id))))
   }
 

@@ -2,20 +2,20 @@ import { createBrowserRouter } from 'react-router-dom'
 import { lazy, Suspense } from 'react'
 import RootLayout from '../layouts/RootLayout'
 import LoadingSpinner from '../components/LoadingSpinner'
+import ProtectedRoute from '../components/ProtectedRoute'
+import GuestRoute from '../components/GuestRoute'
 
 const Home = lazy(() => import('../pages/Home'))
 const Search = lazy(() => import('../pages/Search'))
 const MovieDetails = lazy(() => import('../pages/MovieDetails'))
 const Watchlist = lazy(() => import('../pages/Watchlist'))
-const Login = lazy(() => import('../pages/Login'))
-const Register = lazy(() => import('../pages/Register'))
 const Profile = lazy(() => import('../pages/Profile'))
 const NotFound = lazy(() => import('../pages/NotFound'))
 const Discover = lazy(() => import('../pages/Discover'))
 const GenrePage = lazy(() => import('../pages/GenrePage'))
-const ProtectedRoute = lazy(() => import('../components/ProtectedRoute'))
-const GuestRoute = lazy(() => import('../components/GuestRoute'))
 const Favorites = lazy(() => import('../pages/Favorites'))
+const Login = lazy(() => import('../pages/Login'))
+const Register = lazy(() => import('../pages/Register'))
 
 const SuspenseWrapper = ({ children }) => (
   <Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-brand-bg"><LoadingSpinner /></div>}>
@@ -36,51 +36,41 @@ const router = createBrowserRouter([
       {
         path: 'watchlist',
         element: (
-          <SuspenseWrapper>
-            <ProtectedRoute>
-              <Watchlist />
-            </ProtectedRoute>
-          </SuspenseWrapper>
+          <ProtectedRoute>
+            <SuspenseWrapper><Watchlist /></SuspenseWrapper>
+          </ProtectedRoute>
         ),
       },
       {
         path: 'favorites',
         element: (
-          <SuspenseWrapper>
-            <ProtectedRoute>
-              <Favorites />
-            </ProtectedRoute>
-          </SuspenseWrapper>
+          <ProtectedRoute>
+            <SuspenseWrapper><Favorites /></SuspenseWrapper>
+          </ProtectedRoute>
         ),
       },
       {
         path: 'profile',
         element: (
-          <SuspenseWrapper>
-            <ProtectedRoute>
-              <Profile />
-            </ProtectedRoute>
-          </SuspenseWrapper>
+          <ProtectedRoute>
+            <SuspenseWrapper><Profile /></SuspenseWrapper>
+          </ProtectedRoute>
         ),
       },
       {
         path: 'login',
         element: (
-          <SuspenseWrapper>
-            <GuestRoute>
-              <Login />
-            </GuestRoute>
-          </SuspenseWrapper>
+          <GuestRoute>
+            <SuspenseWrapper><Login /></SuspenseWrapper>
+          </GuestRoute>
         ),
       },
       {
         path: 'register',
         element: (
-          <SuspenseWrapper>
-            <GuestRoute>
-              <Register />
-            </GuestRoute>
-          </SuspenseWrapper>
+          <GuestRoute>
+            <SuspenseWrapper><Register /></SuspenseWrapper>
+          </GuestRoute>
         ),
       },
       { path: '*', element: <SuspenseWrapper><NotFound /></SuspenseWrapper> },

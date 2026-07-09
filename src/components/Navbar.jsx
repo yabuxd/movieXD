@@ -119,114 +119,107 @@ export default function Navbar() {
                 <SearchIcon />
               </button>
 
-              <Link
-                to="/favorites"
-                id="navbar-favorites-btn"
-                className="relative p-2.5 rounded-xl text-brand-muted hover:text-brand-gold-hover hover:bg-brand-surface/60 transition-all duration-300"
-                aria-label="My Favorites"
-              >
-                <HeartIcon />
-                {favorites.length > 0 && (
-                  <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center">
-                    {favorites.length > 9 ? '9+' : favorites.length}
-                  </span>
-                )}
-              </Link>
-
-              <Link
-                to="/watchlist"
-                id="navbar-watchlist-btn"
-                className="relative p-2.5 rounded-xl text-brand-muted hover:text-brand-gold-hover hover:bg-brand-surface/60 transition-all duration-300"
-                aria-label="My Watchlist"
-              >
-                <BookmarkIcon />
-                {watchlist.length > 0 && (
-                  <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-brand-gold text-brand-bg text-[9px] font-bold rounded-full flex items-center justify-center">
-                    {watchlist.length > 9 ? '9+' : watchlist.length}
-                  </span>
-                )}
-              </Link>
-
               {isAuthenticated ? (
-                <div className="relative">
-                  <button
-                    id="navbar-profile-btn"
-                    onClick={() => setDropdownOpen(!dropdownOpen)}
-                    className="w-9 h-9 rounded-full bg-gradient-to-br from-brand-gold-muted to-brand-gold flex items-center justify-center text-xs font-bold text-brand-bg hover:shadow-glow-gold transition-all duration-300"
-                    aria-label="Toggle profile menu"
+                <>
+                  <Link
+                    to="/favorites"
+                    id="navbar-favorites-btn"
+                    className="relative p-2.5 rounded-xl text-brand-muted hover:text-brand-gold-hover hover:bg-brand-surface/60 transition-all duration-300"
+                    aria-label="My Favorites"
                   >
-                    {currentUser?.username ? currentUser.username.slice(0, 2).toUpperCase() : 'MX'}
-                  </button>
-                  
-                  <AnimatePresence>
-                    {dropdownOpen && (
-                      <>
-                        <div className="fixed inset-0 z-40" onClick={() => setDropdownOpen(false)} />
-                        <motion.div
-                          initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                          animate={{ opacity: 1, y: 0, scale: 1 }}
-                          exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                          transition={{ duration: 0.15 }}
-                          className="absolute right-0 mt-2 w-56 rounded-2xl glass border border-brand-border shadow-2xl py-2 overflow-hidden origin-top-right z-50"
-                        >
-                          <div className="px-4 py-3 border-b border-brand-border">
-                            <p className="text-xs text-gray-500 font-medium font-sans">Signed in as</p>
-                            <p className="text-sm font-bold text-white truncate mt-0.5 font-sans">{currentUser?.username}</p>
-                            <p className="text-[11px] text-brand-gold truncate mt-0.5 font-sans">{currentUser?.email}</p>
-                          </div>
-                          
-                          <div className="p-1.5 space-y-1">
-                            <Link
-                              to="/profile"
-                              id="dropdown-profile-btn"
-                              onClick={() => setDropdownOpen(false)}
-                              className="flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl text-sm text-gray-300 hover:text-white hover:bg-white/5 transition-all duration-200"
-                            >
-                              <svg className="w-4 h-4 text-brand-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                              </svg>
-                              Profile
-                            </Link>
-                            
-                            <Link
-                              to="/watchlist"
-                              id="dropdown-watchlist-btn"
-                              onClick={() => setDropdownOpen(false)}
-                              className="flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl text-sm text-gray-300 hover:text-white hover:bg-white/5 transition-all duration-200"
-                            >
-                              <BookmarkIcon className="w-4 h-4 text-brand-gold" />
-                              Watchlist
-                            </Link>
-                            
-                            <Link
-                              to="/favorites"
-                              id="dropdown-favorites-btn"
-                              onClick={() => setDropdownOpen(false)}
-                              className="flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl text-sm text-gray-300 hover:text-white hover:bg-white/5 transition-all duration-200"
-                            >
-                              <HeartIcon className="w-4 h-4 text-brand-gold" />
-                              Favorites
-                            </Link>
-                            
-                            <button
-                              id="dropdown-logout-btn"
-                              onClick={() => {
-                                setDropdownOpen(false)
-                                logout()
-                              }}
-                              className="w-full flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl text-sm text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-all duration-200 text-left"
-                            >
-                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                              </svg>
-                              Logout
-                            </button>
-                          </div>
-                        </motion.div>
-                      </>
+                    <HeartIcon />
+                    {favorites.length > 0 && (
+                      <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center">
+                        {favorites.length > 9 ? '9+' : favorites.length}
+                      </span>
                     )}
-                  </AnimatePresence>
-                </div>
+                  </Link>
+
+                  <Link
+                    to="/watchlist"
+                    id="navbar-watchlist-btn"
+                    className="relative p-2.5 rounded-xl text-brand-muted hover:text-brand-gold-hover hover:bg-brand-surface/60 transition-all duration-300"
+                    aria-label="My Watchlist"
+                  >
+                    <BookmarkIcon />
+                    {watchlist.length > 0 && (
+                      <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-brand-gold text-brand-bg text-[9px] font-bold rounded-full flex items-center justify-center">
+                        {watchlist.length > 9 ? '9+' : watchlist.length}
+                      </span>
+                    )}
+                  </Link>
+
+                  <div className="relative">
+                    <button
+                      id="navbar-profile-btn"
+                      onClick={() => setDropdownOpen(!dropdownOpen)}
+                      className="w-9 h-9 rounded-full bg-gradient-to-br from-brand-gold-muted to-brand-gold flex items-center justify-center text-xs font-bold text-brand-bg hover:shadow-glow-gold transition-all duration-300 overflow-hidden"
+                      aria-label="Toggle profile menu"
+                    >
+                      {currentUser?.avatar ? (
+                        <img src={currentUser.avatar} alt="" className="w-full h-full object-cover" />
+                      ) : (
+                        currentUser?.username?.slice(0, 2).toUpperCase() || 'MX'
+                      )}
+                    </button>
+
+                    <AnimatePresence>
+                      {dropdownOpen && (
+                        <>
+                          <div className="fixed inset-0 z-40" onClick={() => setDropdownOpen(false)} />
+                          <motion.div
+                            initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                            transition={{ duration: 0.15 }}
+                            className="absolute right-0 mt-2 w-56 rounded-2xl glass border border-brand-border shadow-2xl py-2 overflow-hidden origin-top-right z-50"
+                          >
+                            <div className="px-4 py-3 border-b border-brand-border">
+                              <p className="text-xs text-gray-500 font-medium">Signed in as</p>
+                              <p className="text-sm font-bold text-white truncate mt-0.5">{currentUser?.name}</p>
+                              <p className="text-[11px] text-brand-gold truncate mt-0.5">{currentUser?.email}</p>
+                            </div>
+                            <div className="p-1.5 space-y-1">
+                              <Link
+                                to="/profile"
+                                onClick={() => setDropdownOpen(false)}
+                                className="flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl text-sm text-gray-300 hover:text-white hover:bg-white/5 transition-all duration-200"
+                              >
+                                <LibraryIcon className="w-4 h-4 text-brand-gold" />
+                                My Library
+                              </Link>
+                              <Link
+                                to="/watchlist"
+                                onClick={() => setDropdownOpen(false)}
+                                className="flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl text-sm text-gray-300 hover:text-white hover:bg-white/5 transition-all duration-200"
+                              >
+                                <BookmarkIcon className="w-4 h-4 text-brand-gold" />
+                                Watchlist
+                              </Link>
+                              <Link
+                                to="/favorites"
+                                onClick={() => setDropdownOpen(false)}
+                                className="flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl text-sm text-gray-300 hover:text-white hover:bg-white/5 transition-all duration-200"
+                              >
+                                <HeartIcon className="w-4 h-4 text-brand-gold" />
+                                Favorites
+                              </Link>
+                              <button
+                                onClick={() => {
+                                  setDropdownOpen(false)
+                                  logout()
+                                }}
+                                className="w-full flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl text-sm text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-all duration-200 text-left"
+                              >
+                                Sign Out
+                              </button>
+                            </div>
+                          </motion.div>
+                        </>
+                      )}
+                    </AnimatePresence>
+                  </div>
+                </>
               ) : (
                 <Link
                   to="/login"
@@ -287,39 +280,23 @@ export default function Navbar() {
                   <div className="mt-4 pt-4 border-t border-white/[0.06] space-y-3">
                     <div className="px-4">
                       <p className="text-xs text-gray-500 font-medium">Signed in as</p>
-                      <p className="text-sm font-bold text-white truncate mt-0.5">{currentUser?.username}</p>
-                      <p className="text-[11px] text-[#D4AF37] truncate mt-0.5">{currentUser?.email}</p>
+                      <p className="text-sm font-bold text-white truncate mt-0.5">{currentUser?.name}</p>
                     </div>
                     <div className="flex flex-col gap-1">
-                      <Link
-                        to="/profile"
-                        onClick={() => setMobileOpen(false)}
-                        className="flex items-center gap-2.5 px-4 py-3 rounded-xl text-sm text-gray-300 hover:text-white hover:bg-brand-surface/40 transition-all duration-200"
-                      >
-                        Profile
+                      <Link to="/profile" onClick={() => setMobileOpen(false)} className="flex items-center gap-2.5 px-4 py-3 rounded-xl text-sm text-gray-300 hover:text-white hover:bg-brand-surface/40 transition-all duration-200">
+                        My Library
                       </Link>
-                      <Link
-                        to="/watchlist"
-                        onClick={() => setMobileOpen(false)}
-                        className="flex items-center gap-2.5 px-4 py-3 rounded-xl text-sm text-gray-300 hover:text-white hover:bg-brand-surface/40 transition-all duration-200"
-                      >
+                      <Link to="/watchlist" onClick={() => setMobileOpen(false)} className="flex items-center gap-2.5 px-4 py-3 rounded-xl text-sm text-gray-300 hover:text-white hover:bg-brand-surface/40 transition-all duration-200">
                         Watchlist
                       </Link>
-                      <Link
-                        to="/favorites"
-                        onClick={() => setMobileOpen(false)}
-                        className="flex items-center gap-2.5 px-4 py-3 rounded-xl text-sm text-gray-300 hover:text-white hover:bg-brand-surface/40 transition-all duration-200"
-                      >
+                      <Link to="/favorites" onClick={() => setMobileOpen(false)} className="flex items-center gap-2.5 px-4 py-3 rounded-xl text-sm text-gray-300 hover:text-white hover:bg-brand-surface/40 transition-all duration-200">
                         Favorites
                       </Link>
                       <button
-                        onClick={() => {
-                          setMobileOpen(false)
-                          logout()
-                        }}
+                        onClick={() => { setMobileOpen(false); logout() }}
                         className="w-full flex items-center gap-2.5 px-4 py-3 rounded-xl text-sm text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-all duration-200 text-left"
                       >
-                        Logout
+                        Sign Out
                       </button>
                     </div>
                   </div>
@@ -328,7 +305,7 @@ export default function Navbar() {
                     <Link
                       to="/login"
                       onClick={() => setMobileOpen(false)}
-                      className="block text-center px-4 py-2.5 rounded-xl text-sm font-semibold border border-[#D4AF37] text-[#D4AF37] hover:bg-[#D4AF37]/10 transition-all duration-300"
+                      className="block text-center px-4 py-2.5 rounded-xl text-sm font-semibold border border-brand-gold text-brand-gold hover:bg-brand-gold/10 transition-all duration-300"
                     >
                       Sign In
                     </Link>
@@ -438,6 +415,14 @@ function HeartIcon({ className = "w-5 h-5" }) {
   return (
     <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+    </svg>
+  )
+}
+
+function LibraryIcon() {
+  return (
+    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
     </svg>
   )
 }

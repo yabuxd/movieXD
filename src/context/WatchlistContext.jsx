@@ -5,24 +5,22 @@ const WatchlistContext = createContext(null)
 
 export function WatchlistProvider({ children }) {
   const { currentUser } = useAuth()
-  const storageKey = currentUser ? `watchlist_${currentUser.id}` : 'watchlist'
-
   const [watchlist, setWatchlist] = useState([])
-  const [loadedKey, setLoadedKey] = useState('')
+  const storageKey = currentUser ? `watchlist_${currentUser.id}` : null
 
-  // Load from localStorage when storageKey changes
   useEffect(() => {
+    if (!storageKey) {
+      setWatchlist([])
+      return
+    }
     const saved = localStorage.getItem(storageKey)
     setWatchlist(saved ? JSON.parse(saved) : [])
-    setLoadedKey(storageKey)
   }, [storageKey])
 
-  // Save to localStorage only if we are saving for the loadedKey
   useEffect(() => {
-    if (loadedKey === storageKey) {
-      localStorage.setItem(storageKey, JSON.stringify(watchlist))
-    }
-  }, [watchlist, storageKey, loadedKey])
+    if (!storageKey) return
+    localStorage.setItem(storageKey, JSON.stringify(watchlist))
+  }, [watchlist, storageKey])
 
   const isInWatchlist = useCallback(
     (id) => watchlist.some((m) => String(m.id) === String(id)),
@@ -33,7 +31,7 @@ export function WatchlistProvider({ children }) {
     setWatchlist((prev) => {
       const stringId = String(movie.id)
       if (prev.some((m) => String(m.id) === stringId)) {
-        return prev // Silently ignore duplicate
+        return prev
       }
       const newItem = {
         id: stringId,
@@ -41,7 +39,7 @@ export function WatchlistProvider({ children }) {
         poster_path: movie.poster_path || '',
         release_date: movie.release_date || '',
         vote_average: movie.vote_average || 0,
-        addedAt: Date.now()
+        addedAt: Date.now(),
       }
       return [...prev, newItem]
     })
@@ -56,19 +54,18 @@ export function WatchlistProvider({ children }) {
       const stringId = String(movie.id)
       if (prev.some((m) => String(m.id) === stringId)) {
         return prev.filter((m) => String(m.id) !== stringId)
-      } else {
-        return [
-          ...prev,
-          {
-            id: stringId,
-            title: movie.title || '',
-            poster_path: movie.poster_path || '',
-            release_date: movie.release_date || '',
-            vote_average: movie.vote_average || 0,
-            addedAt: Date.now()
-          }
-        ]
       }
+      return [
+        ...prev,
+        {
+          id: stringId,
+          title: movie.title || '',
+          poster_path: movie.poster_path || '',
+          release_date: movie.release_date || '',
+          vote_average: movie.vote_average || 0,
+          addedAt: Date.now(),
+        },
+      ]
     })
   }, [])
 

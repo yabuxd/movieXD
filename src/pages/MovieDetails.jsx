@@ -1,4 +1,4 @@
-import { useParams, Link, useNavigate, useLocation } from 'react-router-dom'
+import { useParams, Link } from 'react-router-dom'
 import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion'
 import { Helmet } from 'react-helmet-async'
@@ -17,8 +17,6 @@ export default function MovieDetails() {
   const { isFavorite, toggleFavorite } = useFavorites()
   const { addToHistory, updateProgress, history } = useContinueWatching()
   const { isAuthenticated } = useAuth()
-  const navigate = useNavigate()
-  const location = useLocation()
   
   const [movie, setMovie] = useState(null)
   const [isLoading, setIsLoading] = useState(true)

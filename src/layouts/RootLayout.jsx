@@ -1,17 +1,17 @@
 import { Outlet, useLocation } from 'react-router-dom'
 import { AnimatePresence, motion } from 'framer-motion'
+import { useAuth } from '../context/AuthContext'
 import Navbar from '../components/Navbar'
 import LoadingSpinner from '../components/LoadingSpinner'
-import { useAuth } from '../context/AuthContext'
 
 export default function RootLayout() {
   const location = useLocation()
   const { initializing } = useAuth()
   const isAuthPage = location.pathname === '/login' || location.pathname === '/register'
 
-  if (initializing && !isAuthPage) {
+  if (initializing) {
     return (
-      <div className="min-h-screen bg-brand-bg flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-brand-bg">
         <LoadingSpinner />
       </div>
     )

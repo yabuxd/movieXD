@@ -10,17 +10,17 @@ MovieXD is a modern, responsive streaming platform UI built with React and Tailw
 - **Dark Theme**: Premium dark mode with red and gold accents.
 - **Movie Cards**: Hover effects, movie details popups, and quick actions.
 - **Smooth Animations**: Micro-interactions and page transitions.
-- **Context Management**: Global watchlist and favorites (per-user via localStorage).
+- **Context Management**: Per-user watchlist, favorites, and continue-watching (localStorage).
 - **Authentication**: Firebase email/password and Google sign-in.
 - **Routing**: Professional routing with React Router.
-- **Icons**: Powered by Lucide React.
 
 ## Tech Stack
 
 - React 18
 - Tailwind CSS
 - React Router DOM
-- Lucide React
+- Firebase Auth
+- Framer Motion
 
 ## Installation
 
@@ -32,23 +32,28 @@ MovieXD is a modern, responsive streaming platform UI built with React and Tailw
    ```
 
 2. Install dependencies:
+
    ```bash
    npm install
    ```
 
-3. Copy `.env.example` to `.env` and fill in your API keys (see [Authentication](#authentication) below).
+3. Copy `.env.example` to `.env` and fill in your keys.
 
 ## Authentication
 
-MovieXD uses **Firebase Authentication** for sign-in, registration, and Google OAuth.
+MovieXD uses **Firebase Authentication** for email/password sign-up, Google OAuth, and session management.
 
-1. Create a Firebase project at [console.firebase.google.com](https://console.firebase.google.com).
-2. Enable **Email/Password** (and optionally **Google**) under Authentication → Sign-in method.
-3. Add authorized domains under Authentication → Settings: `localhost` and your production domain (e.g. `movyxd.netlify.app`).
+### Firebase setup
+
+1. Create a project at [console.firebase.google.com](https://console.firebase.google.com).
+2. Enable **Email/Password** and **Google** under Authentication → Sign-in method.
+3. Add authorized domains: `localhost`, `movyxd.netlify.app`, and your production domain.
 4. Copy the web app config into `.env` using the `VITE_FIREBASE_*` variables from `.env.example`.
-5. For Netlify deployment, set the same `VITE_FIREBASE_*` variables in Site configuration → Environment variables and redeploy.
+5. For Netlify, set the same variables in Site configuration → Environment variables and redeploy.
 
-In local development without Firebase credentials, mock auth is available with demo credentials `user@example.com` / `password123`.
+### Google OAuth
+
+In Google Cloud Console, add authorized JavaScript origins for your dev and production URLs. Firebase uses `https://<project-id>.firebaseapp.com/__/auth/handler` as the OAuth redirect.
 
 ## Usage
 
@@ -56,6 +61,12 @@ Start the development server:
 
 ```bash
 npm run dev
+```
+
+Run tests:
+
+```bash
+npm test
 ```
 
 Open [http://localhost:5173](http://localhost:5173) to view the app.

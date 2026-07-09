@@ -1,5 +1,5 @@
 import { useState, memo } from 'react'
-import { Link, useNavigate, useLocation } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { motion, useReducedMotion } from 'framer-motion'
 import { useWatchlist } from '../context/WatchlistContext'
 import { useAuth } from '../context/AuthContext'
@@ -18,8 +18,6 @@ const MovieCard = memo(function MovieCard({ movie, variant = 'default', priority
   const { isInWatchlist, toggleWatchlist } = useWatchlist()
   const { isFavorite, toggleFavorite } = useFavorites()
   const { isAuthenticated } = useAuth()
-  const navigate = useNavigate()
-  const location = useLocation()
   const inWatchlist = isInWatchlist(movie.id)
   const isFav = isFavorite(movie.id)
   const [imgLoaded, setImgLoaded] = useState(false)

@@ -1,205 +1,166 @@
 import { useState } from 'react'
-import { Link, useNavigate, useLocation } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
+import { Helmet } from 'react-helmet-async'
 import { useAuth } from '../context/AuthContext'
-import AuthStatusFooter from '../components/AuthStatusFooter'
-import {
-  validateEmail,
-  validatePassword,
-  validatePasswordMatch,
-} from '../utils/authValidation'
+import { validateEmail, validatePassword, validateName } from '../utils/authValidation'
+import LoadingSpinner from '../components/LoadingSpinner'
 
 export default function Register() {
+  const [name, setName] = useState('')
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [fieldErrors, setFieldErrors] = useState({})
+  const { register, loginWithGoogle, loading, error, clearError, isConfigured } = useAuth()
   const navigate = useNavigate()
-  const location = useLocation()
-  const {
-    register,
-    error,
-    setError,
-    isConfigured,
-    useMockAuth,
-    authEnabled,
-    firebaseProjectId,
-    configIssues,
-  } = useAuth()
-  const [form, setForm] = useState({ email: '', password: '', confirmPassword: '' })
-  const [fieldErrors, setFieldErrors] = useState({ email: '', password: '', confirmPassword: '' })
-  const [formLoading, setFormLoading] = useState(false)
-
-  const from = location.state?.from?.pathname || '/'
-
-  const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value })
-    setError(null)
-    setFieldErrors({ ...fieldErrors, [e.target.name]: '' })
-  }
-
-  const validateForm = () => {
-    const errors = {
-      email: validateEmail(form.email),
-      password: validatePassword(form.password),
-      confirmPassword: validatePasswordMatch(form.password, form.confirmPassword),
-    }
-    setFieldErrors(errors)
-    return !Object.values(errors).some(Boolean)
-  }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    if (!validateForm()) return
+    clearError()
 
-    setFormLoading(true)
-    try {
-      await register(form.email, form.password)
-      navigate(from, { replace: true })
-    } catch {
-      // Error handled by AuthContext
-    } finally {
-      setFormLoading(false)
+    const errors = {
+      name: validateName(name),
+      email: validateEmail(email),
+      password: validatePassword(password),
     }
+
+    if (errors.name || errors.email || errors.password) {
+      setFieldErrors(errors)
+      return
+    }
+
+    setFieldErrors({})
+    const result = await register(name, email, password)
+
+    if (!result.success) return
+
+    navigate('/', { replace: true })
+  }
+
+  const handleGoogle = async () => {
+    clearError()
+    await loginWithGoogle()
   }
 
   return (
-    <div className="min-h-screen bg-brand-bg flex items-center justify-center px-4 relative overflow-hidden">
-      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-brand-gold/10 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute bottom-1/4 left-1/4 w-64 h-64 bg-brand-gold-muted/10 rounded-full blur-3xl pointer-events-none" />
-
-      <div className="relative z-10 w-full max-w-md my-8">
-        <div className="text-center mb-8">
-          <Link to="/" className="inline-flex items-center gap-2 group">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-brand-gold to-brand-gold-muted flex items-center justify-center shadow-glow-gold group-hover:scale-110 transition-transform">
-              <svg width="22" height="22" viewBox="0 0 18 18" fill="none">
-                <path d="M3 3l4 4-4 4V3zm5 0h7v2h-7V3zm0 4h5v2h-5V7zm0 4h7v2h-7v-2z" fill="#0A0F1E" />
-              </svg>
-            </div>
-            <span className="text-2xl font-black">
-              <span className="text-brand-text">Movie</span>
-              <span className="text-gradient-gold">XD</span>
-            </span>
-          </Link>
-          <p className="text-gray-500 text-sm mt-2">Create your cinematic account</p>
-        </div>
-
-        <div className="glass rounded-2xl border border-brand-border shadow-2xl overflow-hidden">
-          <div className="flex">
-            <Link
-              to="/login"
-              state={location.state}
-              className="flex-1 py-4 text-center text-sm font-semibold text-gray-500 hover:text-gray-300 border-b border-brand-border transition-all duration-200"
-            >
-              Sign In
-            </Link>
-            <div className="flex-1 py-4 text-center text-sm font-semibold bg-brand-gold/10 text-white border-b-2 border-brand-gold">
-              Create Account
-            </div>
+    <>
+      <Helmet>
+        <title>Create Account — MovieXD</title>
+      </Helmet>
+      <div className="min-h-screen flex items-center justify-center px-4 pt-24 pb-16 relative">
+        <div className="absolute inset-0 bg-cinematic-mesh pointer-events-none" />
+        <div className="w-full max-w-md relative z-10">
+          <div className="text-center mb-8">
+            <h1 className="text-3xl font-black text-white mb-2">Create account</h1>
+            <p className="text-brand-muted text-sm">Join MovieXD and save your library</p>
           </div>
 
-          <form onSubmit={handleSubmit} className="p-6 sm:p-8 space-y-5">
-            {error && (
-              <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 text-sm flex items-center gap-2">
-                <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                </svg>
-                <span>{error}</span>
+          <div className="glass rounded-2xl border border-brand-border p-8 shadow-2xl space-y-6">
+            {!isConfigured && (
+              <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-200">
+                Firebase is not configured. Add VITE_FIREBASE_* environment variables before registering.
               </div>
             )}
 
-            <div>
-              <label htmlFor="reg-email" className="block text-sm font-medium text-gray-400 mb-1.5">
-                Email Address
-              </label>
-              <input
-                id="reg-email"
-                type="email"
-                name="email"
-                value={form.email}
-                onChange={handleChange}
-                placeholder="you@example.com"
-                required
-                className={`w-full bg-white/5 border rounded-xl px-4 py-3 text-white placeholder-gray-600 outline-none focus:bg-white/8 transition-all duration-200 ${
-                  fieldErrors.email ? 'border-red-500 focus:border-red-500' : 'border-brand-border focus:border-brand-gold/60'
-                }`}
-              />
-              {fieldErrors.email && (
-                <p className="text-red-500 text-xs mt-1">{fieldErrors.email}</p>
-              )}
-            </div>
-
-            <div>
-              <label htmlFor="reg-password" className="block text-sm font-medium text-gray-400 mb-1.5">
-                Password
-              </label>
-              <input
-                id="reg-password"
-                type="password"
-                name="password"
-                value={form.password}
-                onChange={handleChange}
-                placeholder="••••••••"
-                required
-                className={`w-full bg-white/5 border rounded-xl px-4 py-3 text-white placeholder-gray-600 outline-none focus:bg-white/8 transition-all duration-200 ${
-                  fieldErrors.password ? 'border-red-500 focus:border-red-500' : 'border-brand-border focus:border-brand-gold/60'
-                }`}
-              />
-              {fieldErrors.password && (
-                <p className="text-red-500 text-xs mt-1">{fieldErrors.password}</p>
-              )}
-              <p className="text-gray-600 text-xs mt-1">At least 8 characters with 1 number</p>
-            </div>
-
-            <div>
-              <label htmlFor="reg-confirm-password" className="block text-sm font-medium text-gray-400 mb-1.5">
-                Confirm Password
-              </label>
-              <input
-                id="reg-confirm-password"
-                type="password"
-                name="confirmPassword"
-                value={form.confirmPassword}
-                onChange={handleChange}
-                placeholder="••••••••"
-                required
-                className={`w-full bg-white/5 border rounded-xl px-4 py-3 text-white placeholder-gray-600 outline-none focus:bg-white/8 transition-all duration-200 ${
-                  fieldErrors.confirmPassword ? 'border-red-500 focus:border-red-500' : 'border-brand-border focus:border-brand-gold/60'
-                }`}
-              />
-              {fieldErrors.confirmPassword && (
-                <p className="text-red-500 text-xs mt-1">{fieldErrors.confirmPassword}</p>
-              )}
-            </div>
+            {error && (
+              <div className="rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300">
+                {error}
+              </div>
+            )}
 
             <button
-              id="auth-submit-btn"
-              type="submit"
-              disabled={formLoading || !authEnabled}
-              className="w-full btn-primary justify-center py-3.5 text-base rounded-xl mt-2"
+              type="button"
+              onClick={handleGoogle}
+              disabled={loading || !isConfigured}
+              className="w-full flex items-center justify-center gap-3 px-4 py-3 rounded-xl border border-brand-border bg-white/5 hover:bg-white/10 text-white font-medium transition-all duration-200 disabled:opacity-50"
             >
-              {formLoading ? (
-                <span className="flex items-center gap-2">
-                  <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                  </svg>
-                  Creating account...
-                </span>
-              ) : (
-                'Create Account'
-              )}
+              <GoogleIcon />
+              Continue with Google
             </button>
-          </form>
+
+            <div className="flex items-center gap-3">
+              <div className="flex-1 h-px bg-brand-border" />
+              <span className="text-xs text-brand-muted uppercase tracking-wider">or</span>
+              <div className="flex-1 h-px bg-brand-border" />
+            </div>
+
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div>
+                <label htmlFor="register-name" className="block text-xs font-semibold text-brand-muted uppercase tracking-wider mb-2">
+                  Name
+                </label>
+                <input
+                  id="register-name"
+                  type="text"
+                  autoComplete="name"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  className="w-full px-4 py-3 rounded-xl bg-brand-surface border border-brand-border text-white placeholder-brand-muted focus:outline-none focus:border-brand-gold/50 transition-colors"
+                  placeholder="Your name"
+                />
+                {fieldErrors.name && <p className="mt-1.5 text-xs text-red-400">{fieldErrors.name}</p>}
+              </div>
+
+              <div>
+                <label htmlFor="register-email" className="block text-xs font-semibold text-brand-muted uppercase tracking-wider mb-2">
+                  Email
+                </label>
+                <input
+                  id="register-email"
+                  type="email"
+                  autoComplete="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="w-full px-4 py-3 rounded-xl bg-brand-surface border border-brand-border text-white placeholder-brand-muted focus:outline-none focus:border-brand-gold/50 transition-colors"
+                  placeholder="you@example.com"
+                />
+                {fieldErrors.email && <p className="mt-1.5 text-xs text-red-400">{fieldErrors.email}</p>}
+              </div>
+
+              <div>
+                <label htmlFor="register-password" className="block text-xs font-semibold text-brand-muted uppercase tracking-wider mb-2">
+                  Password
+                </label>
+                <input
+                  id="register-password"
+                  type="password"
+                  autoComplete="new-password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="w-full px-4 py-3 rounded-xl bg-brand-surface border border-brand-border text-white placeholder-brand-muted focus:outline-none focus:border-brand-gold/50 transition-colors"
+                  placeholder="At least 8 characters"
+                />
+                {fieldErrors.password && <p className="mt-1.5 text-xs text-red-400">{fieldErrors.password}</p>}
+              </div>
+
+              <button
+                type="submit"
+                disabled={loading || !isConfigured}
+                className="w-full btn-primary justify-center disabled:opacity-50"
+              >
+                {loading ? <LoadingSpinner size="sm" /> : 'Create Account'}
+              </button>
+            </form>
+
+            <p className="text-center text-sm text-brand-muted">
+              Already have an account?{' '}
+              <Link to="/login" className="text-brand-gold font-semibold hover:text-brand-gold-hover transition-colors">
+                Sign in
+              </Link>
+            </p>
+          </div>
         </div>
-
-        <p className="text-center text-gray-600 text-xs mt-6">
-          By continuing, you agree to MovieXD's Terms of Service and Privacy Policy.
-        </p>
-
-        <AuthStatusFooter
-          isConfigured={isConfigured}
-          useMockAuth={useMockAuth}
-          authEnabled={authEnabled}
-          firebaseProjectId={firebaseProjectId}
-          configIssues={configIssues}
-        />
       </div>
-    </div>
+    </>
+  )
+}
+
+function GoogleIcon() {
+  return (
+    <svg className="w-5 h-5" viewBox="0 0 24 24">
+      <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+      <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+      <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
+      <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
+    </svg>
   )
 }
