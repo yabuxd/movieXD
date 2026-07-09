@@ -8,7 +8,7 @@ import MovieCard from '../components/MovieCard'
 import SkeletonCard from '../components/SkeletonCard'
 import LoadingSpinner from '../components/LoadingSpinner'
 import useInfiniteScroll from '../hooks/useInfiniteScroll'
-import { getTrending, getPopular, getTopRated, getUpcoming, discoverMovies } from '../services/tmdb'
+import { getTrending, getPopular, getTopRated, getUpcoming, discoverMovies, enrichWithTrailers } from '../services/tmdb'
 import { normalizeMovieResults } from '../utils/media'
 import { useContinueWatching } from '../context/ContinueWatchingContext'
 
@@ -86,9 +86,11 @@ export default function Home() {
             movie.backdrop_path &&
             list.findIndex((m) => m.id === movie.id) === i
         )
-        setHeroMovies(featured.slice(0, 10))
+        const heroWithTrailers = await enrichWithTrailers(featured.slice(0, 10), 'movie', 10)
+        setHeroMovies(heroWithTrailers)
         if (animeData.length > 0) {
-          setAnimeHero(animeData[0])
+          const [animeWithTrailer] = await enrichWithTrailers(animeData.slice(0, 1), 'movie', 1)
+          setAnimeHero(animeWithTrailer || animeData[0])
         }
       } catch (err) {
         console.error('Failed to load movies:', err)

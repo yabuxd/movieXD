@@ -1,4 +1,5 @@
 import axios from 'axios'
+import { withTrailer } from '../utils/media'
 
 /**
  * All TMDB requests go through /api/tmdb/* regardless of environment.
@@ -60,10 +61,15 @@ export const searchMovies = async (query, page = 1) => {
   return getCached('/search/movie', { query, page })
 }
 
+export const getMovieVideos = async (id) => {
+  return getCached(`/movie/${id}/videos`)
+}
+
 export const getMovieDetails = async (id) => {
-  return getCached(`/movie/${id}`, {
+  const data = await getCached(`/movie/${id}`, {
     append_to_response: 'videos,credits,similar,recommendations',
   })
+  return withTrailer(data)
 }
 
 export const getGenres = async () => {
@@ -82,10 +88,37 @@ export const getMovieRecommendations = async (id) => {
   return getCached(`/movie/${id}/recommendations`)
 }
 
+export const getTvVideos = async (id) => {
+  return getCached(`/tv/${id}/videos`)
+}
+
 export const getTvDetails = async (id) => {
-  return getCached(`/tv/${id}`, {
+  const data = await getCached(`/tv/${id}`, {
     append_to_response: 'videos,credits,similar,recommendations',
   })
+  return withTrailer(data)
+}
+
+export const enrichWithTrailers = async (items, mediaType = 'movie', limit = 5) => {
+  if (!items?.length) return items
+
+  const targets = items.slice(0, limit)
+  const rest = items.slice(limit)
+  const fetchVideos = mediaType === 'tv' ? getTvVideos : getMovieVideos
+
+  const enriched = await Promise.all(
+    targets.map(async (item) => {
+      if (item.trailer_key) return item
+      try {
+        const videos = await fetchVideos(item.id)
+        return withTrailer({ ...item, videos })
+      } catch {
+        return item
+      }
+    })
+  )
+
+  return [...enriched, ...rest]
 }
 
 export const getTvSeasonDetails = async (tvId, seasonNumber) => {

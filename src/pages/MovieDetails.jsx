@@ -43,11 +43,7 @@ export default function MovieDetails() {
         const data = await getMovieDetails(id)
         setMovie(data)
         addToHistory(data)
-
-        const trailer = data.videos?.results?.find(
-          (v) => v.site === 'YouTube' && v.type === 'Trailer'
-        ) || data.videos?.results?.find((v) => v.site === 'YouTube')
-        resolvePlayer(data.title, trailer?.key, false, null, getMediaYear(data))
+        resolvePlayer(data.title, data.trailer_key, false, null, getMediaYear(data))
       } catch (err) {
         console.error('Failed to load movie details:', err)
         setError('Failed to load movie details. Please try again.')

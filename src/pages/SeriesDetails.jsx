@@ -62,13 +62,11 @@ export default function SeriesDetails() {
     setSelectedSeason(episode.season_number)
     const showTitle = getMediaTitle(showData)
     const episodeLabel = `S${episode.season_number}E${episode.episode_number}`
-    const trailer = showData.videos?.results?.find(
-      (v) => v.site === 'YouTube' && v.type === 'Trailer'
-    ) || showData.videos?.results?.find((v) => v.site === 'YouTube')
+    const trailer = showData.trailer_key
 
     resolvePlayer(
       showTitle,
-      trailer?.key,
+      trailer,
       true,
       episodeLabel,
       getMediaYear(showData)

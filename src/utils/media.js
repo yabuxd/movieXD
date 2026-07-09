@@ -18,18 +18,49 @@ export function getMediaPath(item) {
   return `/movie/${item.id}`
 }
 
+export function pickYoutubeTrailer(videos) {
+  const results = videos?.results ?? (Array.isArray(videos) ? videos : [])
+  const match =
+    results.find((v) => v.site === 'YouTube' && v.type === 'Trailer') ||
+    results.find((v) => v.site === 'YouTube')
+
+  if (!match?.key) return null
+
+  return {
+    key: match.key,
+    name: match.name,
+    type: match.type,
+    site: match.site,
+    url: `https://www.youtube.com/embed/${match.key}?autoplay=1&rel=0`,
+    watchUrl: `https://www.youtube.com/watch?v=${match.key}`,
+  }
+}
+
+export function withTrailer(item) {
+  if (!item) return item
+  const trailer = pickYoutubeTrailer(item.videos)
+  if (!trailer) return item
+  return {
+    ...item,
+    trailer_key: trailer.key,
+    trailer_url: trailer.url,
+    trailer,
+  }
+}
+
 export function normalizeMedia(item, mediaType = null) {
   if (!item) return item
   const resolvedType =
     mediaType ||
     item.media_type ||
     (item.name && !item.title ? 'tv' : 'movie')
-  return {
+  const normalized = {
     ...item,
     title: getMediaTitle(item),
     release_date: getMediaDate(item),
     media_type: resolvedType,
   }
+  return item.trailer_key || item.trailer ? normalized : withTrailer(normalized)
 }
 
 export function normalizeMovieResults(results = [], mediaType = 'movie') {
