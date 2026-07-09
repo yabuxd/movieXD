@@ -53,11 +53,11 @@ export default function EpisodeSidebar({
   }
 
   return (
-    <>
+    <div className="flex flex-col h-full min-h-0">
       <button
         type="button"
         onClick={onToggle}
-        className="lg:hidden w-full flex items-center justify-between px-4 py-3 bg-brand-surface border border-brand-border rounded-xl mb-3 text-white font-semibold text-sm"
+        className="lg:hidden shrink-0 w-full flex items-center justify-between px-4 py-3 bg-brand-surface border border-brand-border rounded-xl mb-3 text-white font-semibold text-sm"
         aria-expanded={isOpen}
       >
         <span>Episodes</span>
@@ -74,7 +74,7 @@ export default function EpisodeSidebar({
       <aside
         className={`${
           isOpen ? 'flex' : 'hidden'
-        } lg:flex w-full h-full min-h-0 bg-brand-surface border border-brand-border rounded-xl overflow-hidden flex-col max-h-[50vh] lg:max-h-full`}
+        } lg:flex flex-1 w-full min-h-0 bg-brand-surface border border-brand-border rounded-xl overflow-hidden flex-col max-h-[50vh] lg:max-h-none`}
       >
         <div className="px-4 py-3 border-b border-brand-border shrink-0">
           <h2 className="text-white font-bold text-sm uppercase tracking-wider mb-2">Episodes</h2>
@@ -183,6 +183,6 @@ export default function EpisodeSidebar({
           )}
         </div>
       </aside>
-    </>
+    </div>
   )
 }
