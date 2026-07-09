@@ -123,7 +123,7 @@ export default function MovieDetails() {
             )}
           </div>
 
-          <div className="w-full min-h-[calc(100vh-12rem)] rounded-2xl overflow-hidden border border-brand-border shadow-2xl">
+          <div className="w-full rounded-2xl overflow-hidden border border-brand-border shadow-2xl">
             <VideoPlayer
               title={title}
               embedUrl={playerEmbedUrl}
@@ -132,7 +132,6 @@ export default function MovieDetails() {
               source={playerSource}
               sources={playerSources}
               onSwitchSource={switchSource}
-              className="min-h-[calc(100vh-12rem)]"
             />
           </div>
 

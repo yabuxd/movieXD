@@ -11,7 +11,7 @@ export default function VideoPlayer({
   className = '',
 }) {
   return (
-    <div className={`relative w-full h-full bg-black flex flex-col ${className}`}>
+    <div className={`relative w-full bg-black flex flex-col ${className}`}>
       {!isResolving && sources && (sources.archive || sources.youtube || sources.trailer) && (
         <div className="flex items-center gap-2 px-3 py-2 bg-brand-bg/90 border-b border-brand-border flex-wrap shrink-0">
           <span className="text-[10px] text-gray-500 uppercase tracking-wider font-bold">Source:</span>
@@ -57,7 +57,7 @@ export default function VideoPlayer({
         </div>
       )}
 
-      <div className="relative flex-1 min-h-0 flex items-center justify-center">
+      <div className="relative w-full aspect-video flex items-center justify-center">
         {isResolving ? (
           <div className="flex flex-col items-center gap-3 p-8">
             <LoadingSpinner />

@@ -48,7 +48,7 @@ export default function GenreRecommendations({ item, mediaType = 'movie' }) {
   if (!isLoading && recommendations.length === 0) return null
 
   return (
-    <div className="mt-10">
+    <div className="mt-10 -mx-4 sm:-mx-6 lg:-mx-8 overflow-hidden">
       <Row title="More Like This" movies={recommendations} isLoading={isLoading} />
     </div>
   )

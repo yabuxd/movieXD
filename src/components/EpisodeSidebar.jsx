@@ -73,8 +73,8 @@ export default function EpisodeSidebar({
 
       <aside
         className={`${
-          isOpen ? 'block' : 'hidden'
-        } lg:block w-full lg:w-80 xl:w-96 shrink-0 bg-brand-surface border border-brand-border rounded-xl overflow-hidden flex flex-col max-h-[50vh] lg:max-h-none lg:h-full`}
+          isOpen ? 'flex' : 'hidden'
+        } lg:flex w-full h-full min-h-0 bg-brand-surface border border-brand-border rounded-xl overflow-hidden flex-col max-h-[50vh] lg:max-h-full`}
       >
         <div className="px-4 py-3 border-b border-brand-border shrink-0">
           <h2 className="text-white font-bold text-sm uppercase tracking-wider mb-2">Episodes</h2>
@@ -128,7 +128,7 @@ export default function EpisodeSidebar({
           )}
         </div>
 
-        <div className="flex-1 overflow-y-auto hide-scrollbar">
+        <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden hide-scrollbar">
           {isLoading ? (
             <div className="flex justify-center py-8">
               <LoadingSpinner />

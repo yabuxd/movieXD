@@ -187,21 +187,23 @@ export default function SeriesDetails() {
             )}
           </div>
 
-          <div className="flex flex-col lg:flex-row gap-4 lg:gap-6 min-h-[calc(100vh-12rem)]">
-            <EpisodeSidebar
-              seasons={series.seasons || []}
-              episodesBySeason={episodesBySeason}
-              loadingSeasons={loadingSeasons}
-              selectedSeason={selectedSeason}
-              onSeasonChange={handleSeasonChange}
-              selectedEpisode={selectedEpisode}
-              onSelectEpisode={(ep) => playEpisode(ep, series)}
-              onExpandSeason={loadSeason}
-              isOpen={sidebarOpen}
-              onToggle={() => setSidebarOpen((v) => !v)}
-            />
+          <div className="grid grid-cols-1 lg:grid-cols-[minmax(280px,24rem)_minmax(0,1fr)] gap-4 lg:gap-6 lg:items-stretch">
+            <div className="order-2 lg:order-1 min-h-0 overflow-hidden max-h-[50vh] lg:max-h-none lg:h-full">
+              <EpisodeSidebar
+                seasons={series.seasons || []}
+                episodesBySeason={episodesBySeason}
+                loadingSeasons={loadingSeasons}
+                selectedSeason={selectedSeason}
+                onSeasonChange={handleSeasonChange}
+                selectedEpisode={selectedEpisode}
+                onSelectEpisode={(ep) => playEpisode(ep, series)}
+                onExpandSeason={loadSeason}
+                isOpen={sidebarOpen}
+                onToggle={() => setSidebarOpen((v) => !v)}
+              />
+            </div>
 
-            <div className="flex-1 min-w-0 rounded-2xl overflow-hidden border border-brand-border shadow-2xl min-h-[50vh] lg:min-h-0">
+            <div className="order-1 lg:order-2 w-full min-w-0 rounded-2xl overflow-hidden border border-brand-border shadow-2xl">
               <VideoPlayer
                 title={playerTitle}
                 embedUrl={playerEmbedUrl}
@@ -210,7 +212,6 @@ export default function SeriesDetails() {
                 source={playerSource}
                 sources={playerSources}
                 onSwitchSource={switchSource}
-                className="h-full min-h-[50vh] lg:min-h-[calc(100vh-12rem)]"
               />
             </div>
           </div>
