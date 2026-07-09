@@ -74,7 +74,7 @@ export default function EpisodeSidebar({
       <aside
         className={`${
           isOpen ? 'flex' : 'hidden'
-        } lg:flex flex-1 w-full min-h-0 bg-brand-surface border border-brand-border rounded-xl overflow-hidden flex-col max-h-[50vh] lg:max-h-none`}
+        } lg:flex flex-col h-full w-full min-h-0 bg-brand-surface border border-brand-border rounded-xl overflow-hidden max-h-[50vh] lg:max-h-none`}
       >
         <div className="px-4 py-3 border-b border-brand-border shrink-0">
           <h2 className="text-white font-bold text-sm uppercase tracking-wider mb-2">Episodes</h2>
