@@ -68,4 +68,40 @@ export const getMovieRecommendations = async (id) => {
   return getCached(`/movie/${id}/recommendations`)
 }
 
+export const getTvDetails = async (id) => {
+  return getCached(`/tv/${id}`, {
+    append_to_response: 'videos,credits,similar,recommendations',
+  })
+}
+
+export const getTvSeasonDetails = async (tvId, seasonNumber) => {
+  return getCached(`/tv/${tvId}/season/${seasonNumber}`)
+}
+
+export const discoverTv = async (params) => {
+  return getCached('/discover/tv', params)
+}
+
+export const getTvGenres = async () => {
+  return getCached('/genre/tv/list')
+}
+
+export const searchTv = async (query, page = 1) => {
+  return getCached('/search/tv', { query, page })
+}
+
+export const getGenreRecommendations = async (genreIds, mediaType = 'movie', excludeId = null) => {
+  const ids = Array.isArray(genreIds) ? genreIds : [genreIds]
+  const endpoint = mediaType === 'tv' ? '/discover/tv' : '/discover/movie'
+  const data = await getCached(endpoint, {
+    with_genres: ids.slice(0, 3).join('|'),
+    sort_by: 'popularity.desc',
+    'vote_count.gte': 50,
+    page: 1,
+  })
+  return (data.results || [])
+    .filter((item) => item.id !== excludeId)
+    .slice(0, 12)
+}
+
 export default tmdbApi

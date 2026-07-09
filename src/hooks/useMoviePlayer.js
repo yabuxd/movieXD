@@ -56,7 +56,7 @@ export default function useMoviePlayer() {
   }, [])
 
   const resolve = useCallback(
-    async (title, trailerKey, isTv = false) => {
+    async (title, trailerKey, isTv = false, episodeLabel = null) => {
       setPlayerState({
         source: null,
         embedUrl: null,
@@ -69,9 +69,11 @@ export default function useMoviePlayer() {
         },
       })
 
-      const searchSuffix = isTv ? 'full episodes' : 'full movie'
+      const searchQuery = episodeLabel
+        ? `${title} ${episodeLabel} full episode`
+        : `${title} ${isTv ? 'full episodes' : 'full movie'}`
       const youtubeUrl = `https://www.youtube.com/embed?listType=search&list=${encodeURIComponent(
-        `${title} ${searchSuffix}`
+        searchQuery
       )}&autoplay=1`
       const trailerUrl = trailerKey
         ? `https://www.youtube.com/embed/${trailerKey}?autoplay=1&rel=0`
@@ -80,9 +82,11 @@ export default function useMoviePlayer() {
       let archiveUrl = null
 
       try {
-        const queryStr = isTv
-          ? `title:(${title})`
-          : `title:(${title}) AND mediatype:(movies)`
+        const queryStr = episodeLabel
+          ? `title:(${title}) AND title:(${episodeLabel})`
+          : isTv
+            ? `title:(${title})`
+            : `title:(${title}) AND mediatype:(movies)`
         const query = encodeURIComponent(queryStr)
         const response = await fetch(
           `https://archive.org/advancedsearch.php?q=${query}&fl[]=identifier&fl[]=title&fl[]=mediatype&rows=10&output=json`

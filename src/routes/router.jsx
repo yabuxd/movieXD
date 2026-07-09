@@ -8,6 +8,7 @@ import GuestRoute from '../components/GuestRoute'
 const Home = lazy(() => import('../pages/Home'))
 const Search = lazy(() => import('../pages/Search'))
 const MovieDetails = lazy(() => import('../pages/MovieDetails'))
+const SeriesDetails = lazy(() => import('../pages/SeriesDetails'))
 const Watchlist = lazy(() => import('../pages/Watchlist'))
 const Profile = lazy(() => import('../pages/Profile'))
 const NotFound = lazy(() => import('../pages/NotFound'))
@@ -33,6 +34,7 @@ const router = createBrowserRouter([
       { path: 'discover', element: <SuspenseWrapper><Discover /></SuspenseWrapper> },
       { path: 'genre/:id', element: <SuspenseWrapper><GenrePage /></SuspenseWrapper> },
       { path: 'movie/:id', element: <SuspenseWrapper><MovieDetails /></SuspenseWrapper> },
+      { path: 'tv/:id', element: <SuspenseWrapper><SeriesDetails /></SuspenseWrapper> },
       {
         path: 'watchlist',
         element: (

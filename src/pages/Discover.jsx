@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useLocation } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { discoverMovies } from '../services/tmdb'
+import { discoverMovies, discoverTv } from '../services/tmdb'
 import { useDiscoverStore } from '../store/discoverStore'
 import MovieCard from '../components/MovieCard'
 import DiscoverFilters from '../components/DiscoverFilters'
@@ -33,8 +33,12 @@ export default function Discover() {
         with_genres: filters.with_genres.join(','),
         page: nextPage,
       }
-      const data = await discoverMovies(params)
-      const newResults = data.results || []
+      const discoverFn = isTv ? discoverTv : discoverMovies
+      const data = await discoverFn(params)
+      const newResults = (data.results || []).map((item) => ({
+        ...item,
+        media_type: isTv ? 'tv' : 'movie',
+      }))
 
       setMovies((prev) => {
         const existingIds = new Set(prev.map((movie) => movie.id))
@@ -48,7 +52,7 @@ export default function Discover() {
     } finally {
       setIsFetchingMore(false)
     }
-  }, [page, isFetchingMore, hasMore, isLoading, filters])
+  }, [page, isFetchingMore, hasMore, isLoading, filters, isTv])
 
   const sentinelRef = useInfiniteScroll({
     hasMore,
@@ -68,8 +72,12 @@ export default function Discover() {
           with_genres: filters.with_genres.join(','),
           page: 1,
         }
-        const data = await discoverMovies(params)
-        setMovies(data.results || [])
+        const discoverFn = isTv ? discoverTv : discoverMovies
+        const data = await discoverFn(params)
+        setMovies((data.results || []).map((item) => ({
+          ...item,
+          media_type: isTv ? 'tv' : 'movie',
+        })))
         setHasMore(data.page < data.total_pages)
       } catch (err) {
         console.error('Failed to discover movies:', err)
@@ -85,7 +93,7 @@ export default function Discover() {
     }, 500)
 
     return () => clearTimeout(handler)
-  }, [filters])
+  }, [filters, isTv])
 
   return (
     <div className="min-h-screen bg-brand-bg pt-24 pb-16 px-4 sm:px-6 lg:px-8 max-w-screen-xl mx-auto">
@@ -172,7 +180,7 @@ export default function Discover() {
           <svg className="w-16 h-16 text-gray-700 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
           </svg>
-          <p className="text-gray-400 text-xl font-semibold mb-2">No movies found</p>
+          <p className="text-gray-400 text-xl font-semibold mb-2">No {isTv ? 'TV shows' : 'movies'} found</p>
           <p className="text-gray-600 text-sm">Try adjusting your filters.</p>
         </div>
       )}

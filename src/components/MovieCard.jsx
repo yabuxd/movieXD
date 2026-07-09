@@ -5,6 +5,7 @@ import { useWatchlist } from '../context/WatchlistContext'
 import { useAuth } from '../context/AuthContext'
 import { useFavorites } from '../context/FavoritesContext'
 import { tmdbPosterProps } from '../utils/tmdbImages'
+import { getMediaTitle, getMediaDate, getMediaPath } from '../utils/media'
 
 const GENRE_MAP = {
   28: 'Action', 12: 'Adventure', 16: 'Animation', 35: 'Comedy', 80: 'Crime',
@@ -24,8 +25,10 @@ const MovieCard = memo(function MovieCard({ movie, variant = 'default', priority
   const [imgError, setImgError] = useState(false)
   const isAnime = variant === 'anime'
 
-  const year = movie.release_date
-    ? new Date(movie.release_date).getFullYear()
+  const displayTitle = getMediaTitle(movie)
+  const mediaPath = getMediaPath(movie)
+  const year = getMediaDate(movie)
+    ? new Date(getMediaDate(movie)).getFullYear()
     : 'TBA'
 
   const rating = movie.vote_average > 0 ? movie.vote_average.toFixed(1) : null
@@ -62,7 +65,7 @@ const MovieCard = memo(function MovieCard({ movie, variant = 'default', priority
           isAnime ? 'ring-1 ring-brand-gold-muted/10' : 'ring-1 ring-black/[0.06] dark:ring-white/[0.06]'
         }`}
       >
-        <Link to={`/movie/${movie.id}`} className="absolute inset-0 z-0 block">
+        <Link to={mediaPath} className="absolute inset-0 z-0 block">
           {!imgLoaded && !imgError && (
             <div className="absolute inset-0 skeleton rounded-2xl" />
           )}
@@ -72,7 +75,7 @@ const MovieCard = memo(function MovieCard({ movie, variant = 'default', priority
               src={poster.src}
               srcSet={poster.srcSet}
               sizes={poster.sizes}
-              alt={movie.title}
+              alt={displayTitle}
               onLoad={() => setImgLoaded(true)}
               onError={() => setImgError(true)}
               loading={priority ? 'eager' : 'lazy'}
@@ -85,7 +88,7 @@ const MovieCard = memo(function MovieCard({ movie, variant = 'default', priority
           ) : imgError ? (
             <div className="w-full h-full flex flex-col items-center justify-center bg-brand-card p-3 text-center">
               <FilmIcon className="text-brand-muted mb-2 w-8 h-8" />
-              <span className="text-brand-muted text-xs leading-tight">{movie.title}</span>
+              <span className="text-brand-muted text-xs leading-tight">{displayTitle}</span>
             </div>
           ) : (
             <div className="absolute inset-0 skeleton rounded-2xl" />
@@ -170,9 +173,9 @@ const MovieCard = memo(function MovieCard({ movie, variant = 'default', priority
         </div>
       </div>
 
-      <Link to={`/movie/${movie.id}`} className="block mt-3 px-0.5">
+      <Link to={mediaPath} className="block mt-3 px-0.5">
         <p className={`text-brand-text text-sm font-semibold leading-tight truncate transition-colors duration-200 ${hoverTitleColor}`}>
-          {movie.title}
+          {displayTitle}
         </p>
         <div className="flex items-center gap-1.5 mt-1 flex-wrap">
           <span className="text-brand-muted text-xs">{year}</span>
