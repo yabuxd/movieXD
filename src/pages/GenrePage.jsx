@@ -1,10 +1,10 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useParams, Link } from 'react-router-dom'
-import { useInView } from 'react-intersection-observer'
 import { discoverMovies, getGenres } from '../services/tmdb'
 import MovieCard from '../components/MovieCard'
 import LoadingSpinner from '../components/LoadingSpinner'
 import SkeletonCard from '../components/SkeletonCard'
+import useInfiniteScroll from '../hooks/useInfiniteScroll'
 
 export default function GenrePage() {
   const { id } = useParams()
@@ -15,18 +15,47 @@ export default function GenrePage() {
   const [isFetchingMore, setIsFetchingMore] = useState(false)
   const [hasMore, setHasMore] = useState(true)
   const [totalResults, setTotalResults] = useState(0)
-  
-  const { ref, inView } = useInView({
-    threshold: 0,
-    rootMargin: '400px',
+
+  const loadMore = useCallback(async () => {
+    if (isFetchingMore || !hasMore || isLoading) return
+
+    setIsFetchingMore(true)
+    const nextPage = page + 1
+
+    try {
+      const data = await discoverMovies({
+        with_genres: id,
+        page: nextPage,
+        sort_by: 'popularity.desc',
+      })
+      const newResults = data.results || []
+
+      setMovies((prev) => {
+        const existingIds = new Set(prev.map((movie) => movie.id))
+        const filtered = newResults.filter((movie) => !existingIds.has(movie.id))
+        return [...prev, ...filtered]
+      })
+      setPage(nextPage)
+      setHasMore(data.page < data.total_pages && newResults.length > 0)
+    } catch (err) {
+      console.error('Failed to load more movies:', err)
+    } finally {
+      setIsFetchingMore(false)
+    }
+  }, [page, isFetchingMore, hasMore, isLoading, id])
+
+  const sentinelRef = useInfiniteScroll({
+    hasMore,
+    isLoading: isLoading || isFetchingMore,
+    onLoadMore: loadMore,
+    enabled: !isLoading,
   })
 
-  // Fetch genre name
   useEffect(() => {
     const fetchGenreName = async () => {
       try {
         const data = await getGenres()
-        const genre = data.genres?.find(g => g.id === Number(id))
+        const genre = data.genres?.find((g) => g.id === Number(id))
         if (genre) setGenreName(genre.name)
       } catch (err) {
         console.error('Failed to load genre name', err)
@@ -35,24 +64,26 @@ export default function GenrePage() {
     fetchGenreName()
   }, [id])
 
-  // Initial Fetch
   useEffect(() => {
     const fetchInitial = async () => {
       setIsLoading(true)
       setPage(1)
+      setHasMore(true)
       window.scrollTo(0, 0)
-      
+
       try {
         const data = await discoverMovies({
           with_genres: id,
           page: 1,
-          sort_by: 'popularity.desc'
+          sort_by: 'popularity.desc',
         })
         setMovies(data.results || [])
         setHasMore(data.page < data.total_pages)
         setTotalResults(data.total_results)
       } catch (err) {
         console.error('Failed to load genre movies:', err)
+        setMovies([])
+        setHasMore(false)
       } finally {
         setIsLoading(false)
       }
@@ -61,38 +92,8 @@ export default function GenrePage() {
     fetchInitial()
   }, [id])
 
-  // Infinite Scroll Fetch
-  const loadMore = useCallback(async () => {
-    if (isFetchingMore || !hasMore || isLoading) return
-
-    setIsFetchingMore(true)
-    const nextPage = page + 1
-    
-    try {
-      const data = await discoverMovies({
-        with_genres: id,
-        page: nextPage,
-        sort_by: 'popularity.desc'
-      })
-      setMovies(prev => [...prev, ...data.results])
-      setPage(nextPage)
-      setHasMore(data.page < data.total_pages)
-    } catch (err) {
-      console.error('Failed to load more movies:', err)
-    } finally {
-      setIsFetchingMore(false)
-    }
-  }, [page, isFetchingMore, hasMore, isLoading, id])
-
-  useEffect(() => {
-    if (inView) {
-      loadMore()
-    }
-  }, [inView, loadMore])
-
   return (
     <div className="min-h-screen bg-brand-bg">
-      {/* Hero Banner */}
       <div className="relative pt-32 pb-16 px-4 sm:px-6 lg:px-8 max-w-screen-xl mx-auto border-b border-white/[0.08] bg-gradient-to-br from-brand-gold/10 via-brand-surface to-transparent">
         <Link to="/discover" className="inline-flex items-center gap-2 text-brand-muted hover:text-brand-gold transition-colors text-sm font-medium mb-6">
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -117,14 +118,22 @@ export default function GenrePage() {
           <>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-5">
               {movies.map((movie, index) => (
-                <MovieCard key={`${movie.id}-${index}`} movie={movie} />
+                <MovieCard key={`${movie.id}-${index}`} movie={movie} lowPriority />
               ))}
+              {isFetchingMore &&
+                Array.from({ length: 6 }).map((_, i) => (
+                  <SkeletonCard key={`skeleton-genre-${i}`} />
+                ))}
             </div>
-            
-            {/* Infinite Scroll trigger */}
-            <div ref={ref} className="w-full py-12 flex justify-center">
+
+            <div
+              ref={sentinelRef}
+              className="w-full py-12 flex flex-col items-center justify-center min-h-[120px]"
+            >
               {isFetchingMore && <LoadingSpinner />}
-              {!hasMore && <p className="text-gray-500">You've reached the end of the list.</p>}
+              {!hasMore && (
+                <p className="text-gray-500 font-semibold text-sm">You've reached the end of the list.</p>
+              )}
             </div>
           </>
         ) : (

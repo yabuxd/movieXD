@@ -6,7 +6,7 @@ import { useAuth } from '../context/AuthContext'
 export default function Login() {
   const navigate = useNavigate()
   const location = useLocation()
-  const { login, loginWithGoogle, resetPassword, error, setError } = useAuth()
+  const { login, loginWithGoogle, resetPassword, error, setError, isConfigured, useMockAuth } = useAuth()
 
   const [form, setForm] = useState({ email: '', password: '' })
   const [formLoading, setFormLoading] = useState(false)
@@ -366,6 +366,18 @@ export default function Login() {
           and{' '}
           <span className="text-gray-400 hover:text-white cursor-pointer transition-colors">Privacy Policy</span>.
         </p>
+
+        {import.meta.env.DEV && (
+          <p className="text-center text-xs mt-3 text-gray-500">
+            {isConfigured ? (
+              <span className="text-green-500/80">Firebase connected</span>
+            ) : useMockAuth ? (
+              <span className="text-amber-500/80">Mock auth mode (demo: user@example.com / password123)</span>
+            ) : (
+              <span className="text-red-400/80">Firebase not configured — auth disabled in production builds</span>
+            )}
+          </p>
+        )}
       </div>
     </div>
   )

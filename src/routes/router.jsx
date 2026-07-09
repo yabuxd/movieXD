@@ -14,6 +14,7 @@ const NotFound = lazy(() => import('../pages/NotFound'))
 const Discover = lazy(() => import('../pages/Discover'))
 const GenrePage = lazy(() => import('../pages/GenrePage'))
 const ProtectedRoute = lazy(() => import('../components/ProtectedRoute'))
+const GuestRoute = lazy(() => import('../components/GuestRoute'))
 const Favorites = lazy(() => import('../pages/Favorites'))
 
 const SuspenseWrapper = ({ children }) => (
@@ -62,8 +63,26 @@ const router = createBrowserRouter([
           </SuspenseWrapper>
         ),
       },
-      { path: 'login', element: <SuspenseWrapper><Login /></SuspenseWrapper> },
-      { path: 'register', element: <SuspenseWrapper><Register /></SuspenseWrapper> },
+      {
+        path: 'login',
+        element: (
+          <SuspenseWrapper>
+            <GuestRoute>
+              <Login />
+            </GuestRoute>
+          </SuspenseWrapper>
+        ),
+      },
+      {
+        path: 'register',
+        element: (
+          <SuspenseWrapper>
+            <GuestRoute>
+              <Register />
+            </GuestRoute>
+          </SuspenseWrapper>
+        ),
+      },
       { path: '*', element: <SuspenseWrapper><NotFound /></SuspenseWrapper> },
     ],
   },

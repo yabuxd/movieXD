@@ -1,12 +1,12 @@
 import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
+import { tmdbBackdropProps, tmdbPosterProps } from '../utils/tmdbImages'
 
 export default function AnimeHero({ movie }) {
   if (!movie) return null
 
-  const backdrop = movie.backdrop_path
-    ? `https://image.tmdb.org/t/p/original${movie.backdrop_path}`
-    : ''
+  const backdrop = tmdbBackdropProps(movie.backdrop_path)
+  const poster = tmdbPosterProps(movie.poster_path)
 
   return (
     <section className="relative mx-4 sm:mx-6 lg:mx-8 my-12 rounded-3xl overflow-hidden border border-white/[0.08] shadow-card">
@@ -14,8 +14,14 @@ export default function AnimeHero({ movie }) {
 
       {backdrop && (
         <img
-          src={backdrop}
-          alt={movie.title}
+          src={backdrop.src}
+          srcSet={backdrop.srcSet}
+          sizes={backdrop.sizes}
+          alt=""
+          aria-hidden="true"
+          loading="lazy"
+          decoding="async"
+          fetchPriority="low"
           className="absolute inset-0 w-full h-full object-cover opacity-30"
         />
       )}
@@ -51,7 +57,7 @@ export default function AnimeHero({ movie }) {
           </div>
         </motion.div>
 
-        {movie.poster_path && (
+        {poster && (
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             whileInView={{ opacity: 1, scale: 1 }}
@@ -61,8 +67,12 @@ export default function AnimeHero({ movie }) {
           >
             <div className="w-44 sm:w-52 rounded-2xl overflow-hidden ring-2 ring-brand-gold/30 poster-glow">
               <img
-                src={`https://image.tmdb.org/t/p/w500${movie.poster_path}`}
+                src={poster.src}
+                srcSet={poster.srcSet}
+                sizes={poster.sizes}
                 alt={movie.title}
+                loading="lazy"
+                decoding="async"
                 className="w-full aspect-[2/3] object-cover"
               />
             </div>

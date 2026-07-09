@@ -1,8 +1,11 @@
 import { useState, useEffect, useMemo, useRef, useCallback } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { Helmet } from 'react-helmet-async'
+import { motion, useReducedMotion } from 'framer-motion'
 import MovieCard from '../components/MovieCard'
 import SkeletonCard from '../components/SkeletonCard'
+import LoadingSpinner from '../components/LoadingSpinner'
+import useInfiniteScroll from '../hooks/useInfiniteScroll'
 import { searchMovies, getPopular, getGenres, discoverMovies } from '../services/tmdb'
 
 const SORT_OPTIONS = [
@@ -28,17 +31,18 @@ export default function Search() {
   const [page, setPage] = useState(1)
   const [hasMore, setHasMore] = useState(true)
 
-  const observer = useRef()
-  const lastMovieElementRef = useCallback(node => {
-    if (isLoadingMore) return
-    if (observer.current) observer.current.disconnect()
-    observer.current = new IntersectionObserver(entries => {
-      if (entries[0].isIntersecting && hasMore) {
-        setPage(prevPage => prevPage + 1)
-      }
-    })
-    if (node) observer.current.observe(node)
-  }, [isLoadingMore, hasMore])
+  const shouldReduceMotion = useReducedMotion()
+
+  const loadMore = useCallback(() => {
+    if (isLoadingMore || !hasMore || isLoading) return
+    setPage((prevPage) => prevPage + 1)
+  }, [isLoadingMore, hasMore, isLoading])
+
+  const sentinelRef = useInfiniteScroll({
+    hasMore,
+    isLoading: isLoading || isLoadingMore,
+    onLoadMore: loadMore,
+  })
 
   // Debouncing effect
   useEffect(() => {
@@ -71,7 +75,7 @@ export default function Search() {
       try {
         const data = await getGenres()
         setGenres(data.genres || [])
-      } catch(e) {}
+      } catch (e) {}
     }
     fetchG()
   }, [])
@@ -179,6 +183,16 @@ export default function Search() {
     }
   }
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: {
+        staggerChildren: shouldReduceMotion ? 0 : 0.05,
+      },
+    },
+  }
+
   return (
     <>
       <Helmet>
@@ -187,113 +201,113 @@ export default function Search() {
       </Helmet>
       <div className="min-h-screen bg-brand-bg pt-24 pb-16 px-4 sm:px-6 lg:px-8 max-w-screen-xl mx-auto">
         {/* Page Title */}
-      <h1 className="text-3xl font-bold text-white mb-8">
-        {debouncedQ ? (
+        <h1 className="text-3xl font-bold text-white mb-8">
+          {debouncedQ ? (
+            <>
+              Results for{' '}
+              <span className="text-gradient-red">"{debouncedQ}"</span>
+            </>
+          ) : (
+            'Browse Popular Movies'
+          )}
+        </h1>
+
+        {/* Search Bar */}
+        <form onSubmit={handleSearch} className="mb-8">
+          <div className="flex gap-3">
+            <div className="flex-1 flex items-center glass rounded-xl px-4 py-3 border border-brand-border focus-within:border-brand-gold/60 transition-colors duration-200">
+              <svg className="w-5 h-5 text-gray-500 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+              <input
+                id="search-page-input"
+                type="text"
+                value={localQ}
+                onChange={(e) => setLocalQ(e.target.value)}
+                placeholder="Search movies..."
+                className="flex-1 bg-transparent text-white placeholder-gray-500 outline-none"
+              />
+              {localQ && (
+                <button
+                  type="button"
+                  onClick={() => { setLocalQ(''); setSearchParams({}) }}
+                  className="text-gray-500 hover:text-white transition-colors ml-2"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              )}
+            </div>
+            <button
+              id="search-submit-btn"
+              type="submit"
+              className="btn-primary px-6"
+            >
+              Search
+            </button>
+          </div>
+        </form>
+
+        {/* Filters */}
+        <div className="flex flex-wrap gap-3 mb-8 items-center justify-end">
+          {/* Sort */}
+          <div className="ml-auto">
+            <select
+              id="sort-select"
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value)}
+              className="glass border border-brand-border text-gray-300 text-sm rounded-lg px-3 py-2 outline-none focus:border-brand-gold/60 transition-colors bg-transparent cursor-pointer"
+            >
+              {SORT_OPTIONS.map((opt) => (
+                <option key={opt.value} value={opt.value} className="bg-brand-card text-white">
+                  {opt.label}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        {/* Grid */}
+        {isLoading ? (
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-5">
+            {Array.from({ length: 12 }).map((_, i) => (
+              <SkeletonCard key={i} />
+            ))}
+          </div>
+        ) : results.length > 0 ? (
           <>
-            Results for{' '}
-            <span className="text-gradient-red">"{debouncedQ}"</span>
+            <motion.div
+              variants={containerVariants}
+              initial="hidden"
+              animate="show"
+              className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-5"
+            >
+              {results.map((movie) => (
+                <MovieCard key={movie.id} movie={movie} lowPriority />
+              ))}
+              {isLoadingMore && Array.from({ length: 6 }).map((_, i) => (
+                <SkeletonCard key={`skeleton-search-${i}`} />
+              ))}
+            </motion.div>
+            
+            {/* Sentinel Intersection and Loading More UI */}
+            <div ref={sentinelRef} className="w-full py-12 flex flex-col items-center justify-center min-h-[120px]">
+              {isLoadingMore && <LoadingSpinner />}
+              {!hasMore && results.length > 0 && (
+                <p className="text-gray-500 font-semibold text-sm">No more results</p>
+              )}
+            </div>
           </>
         ) : (
-          'Browse Popular Movies'
-        )}
-      </h1>
-
-      {/* Search Bar */}
-      <form onSubmit={handleSearch} className="mb-8">
-        <div className="flex gap-3">
-          <div className="flex-1 flex items-center glass rounded-xl px-4 py-3 border border-brand-border focus-within:border-brand-gold/60 transition-colors duration-200">
-            <svg className="w-5 h-5 text-gray-500 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          <div className="flex flex-col items-center justify-center py-24 text-center">
+            <svg className="w-16 h-16 text-gray-700 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
-            <input
-              id="search-page-input"
-              type="text"
-              value={localQ}
-              onChange={(e) => setLocalQ(e.target.value)}
-              placeholder="Search movies..."
-              className="flex-1 bg-transparent text-white placeholder-gray-500 outline-none"
-            />
-            {localQ && (
-              <button
-                type="button"
-                onClick={() => { setLocalQ(''); setSearchParams({}) }}
-                className="text-gray-500 hover:text-white transition-colors ml-2"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            )}
+            <p className="text-gray-400 text-xl font-semibold mb-2">No movies found</p>
+            <p className="text-gray-600 text-sm">Try a different search term.</p>
           </div>
-          <button
-            id="search-submit-btn"
-            type="submit"
-            className="btn-primary px-6"
-          >
-            Search
-          </button>
-        </div>
-      </form>
-
-      {/* Filters */}
-      <div className="flex flex-wrap gap-3 mb-8 items-center justify-end">
-        {/* Sort */}
-        <div className="ml-auto">
-          <select
-            id="sort-select"
-            value={sortBy}
-            onChange={(e) => setSortBy(e.target.value)}
-            className="glass border border-brand-border text-gray-300 text-sm rounded-lg px-3 py-2 outline-none focus:border-brand-gold/60 transition-colors bg-transparent cursor-pointer"
-          >
-            {SORT_OPTIONS.map((opt) => (
-              <option key={opt.value} value={opt.value} className="bg-brand-card text-white">
-                {opt.label}
-              </option>
-            ))}
-          </select>
-        </div>
-      </div>
-
-      {/* Grid */}
-      {isLoading ? (
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-5">
-          {Array.from({ length: 12 }).map((_, i) => (
-            <SkeletonCard key={i} />
-          ))}
-        </div>
-      ) : results.length > 0 ? (
-        <>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-5">
-            {results.map((movie, index) => {
-              if (results.length === index + 1) {
-                return (
-                  <div ref={lastMovieElementRef} key={movie.id} className="h-full">
-                    <MovieCard movie={movie} />
-                  </div>
-                )
-              } else {
-                return <MovieCard key={movie.id} movie={movie} />
-              }
-            })}
-          </div>
-          
-          {isLoadingMore && (
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-5 mt-5">
-              {Array.from({ length: 6 }).map((_, i) => (
-                <SkeletonCard key={`more-${i}`} />
-              ))}
-            </div>
-          )}
-        </>
-      ) : (
-        <div className="flex flex-col items-center justify-center py-24 text-center">
-          <svg className="w-16 h-16 text-gray-700 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-          </svg>
-          <p className="text-gray-400 text-xl font-semibold mb-2">No movies found</p>
-          <p className="text-gray-600 text-sm">Try a different search term.</p>
-        </div>
-      )}
+        )}
       </div>
     </>
   )

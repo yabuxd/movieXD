@@ -11,6 +11,7 @@ export default function Row({
   isLoading = false,
   variant = 'default',
   seeAllLink = null,
+  priorityCount = 0,
 }) {
   const rowRef = useRef(null)
   const isAnime = variant === 'anime'
@@ -31,7 +32,7 @@ export default function Row({
     hidden: { opacity: 0 },
     show: {
       opacity: 1,
-      transition: { staggerChildren: 0.1 }
+      transition: { staggerChildren: 0.03 }
     }
   }
 
@@ -106,8 +107,13 @@ export default function Row({
         >
           {isLoading
             ? Array.from({ length: 8 }).map((_, i) => <SkeletonCard key={i} variant={variant} />)
-            : movies.map((movie) => (
-                <MovieCard key={movie.id} movie={movie} variant={variant} />
+            : movies.map((movie, index) => (
+                <MovieCard
+                  key={movie.id}
+                  movie={movie}
+                  variant={variant}
+                  priority={index < priorityCount}
+                />
               ))}
         </motion.div>
       </div>

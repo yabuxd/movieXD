@@ -17,51 +17,55 @@ const tmdbApi = axios.create({
   timeout: 15000,
 })
 
-export const getTrending = async () => {
-  const response = await tmdbApi.get('/trending/movie/day')
+// Simple in-memory cache to ensure fast retrieval
+const apiCache = new Map()
+
+const getCached = async (url, params = {}) => {
+  const cacheKey = `${url}?${JSON.stringify(params)}`
+  if (apiCache.has(cacheKey)) {
+    return apiCache.get(cacheKey)
+  }
+  const response = await tmdbApi.get(url, { params })
+  apiCache.set(cacheKey, response.data)
   return response.data
+}
+
+export const getTrending = async () => {
+  return getCached('/trending/movie/day')
 }
 
 export const getPopular = async (page = 1) => {
-  const response = await tmdbApi.get('/movie/popular', { params: { page } })
-  return response.data
+  return getCached('/movie/popular', { page })
 }
 
 export const getTopRated = async () => {
-  const response = await tmdbApi.get('/movie/top_rated')
-  return response.data
+  return getCached('/movie/top_rated')
 }
 
 export const getUpcoming = async () => {
-  const response = await tmdbApi.get('/movie/upcoming')
-  return response.data
+  return getCached('/movie/upcoming')
 }
 
 export const searchMovies = async (query, page = 1) => {
-  const response = await tmdbApi.get('/search/movie', { params: { query, page } })
-  return response.data
+  return getCached('/search/movie', { query, page })
 }
 
 export const getMovieDetails = async (id) => {
-  const response = await tmdbApi.get(`/movie/${id}`, {
-    params: { append_to_response: 'videos,credits,similar,recommendations' },
+  return getCached(`/movie/${id}`, {
+    append_to_response: 'videos,credits,similar,recommendations',
   })
-  return response.data
 }
 
 export const getGenres = async () => {
-  const response = await tmdbApi.get('/genre/movie/list')
-  return response.data
+  return getCached('/genre/movie/list')
 }
 
 export const discoverMovies = async (params) => {
-  const response = await tmdbApi.get('/discover/movie', { params })
-  return response.data
+  return getCached('/discover/movie', params)
 }
 
 export const getMovieRecommendations = async (id) => {
-  const response = await tmdbApi.get(`/movie/${id}/recommendations`)
-  return response.data
+  return getCached(`/movie/${id}/recommendations`)
 }
 
 export default tmdbApi

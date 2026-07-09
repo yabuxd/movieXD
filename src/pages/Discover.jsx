@@ -1,6 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useLocation } from 'react-router-dom'
-import { useInView } from 'react-intersection-observer'
 import { motion, AnimatePresence } from 'framer-motion'
 import { discoverMovies } from '../services/tmdb'
 import { useDiscoverStore } from '../store/discoverStore'
@@ -8,6 +7,7 @@ import MovieCard from '../components/MovieCard'
 import DiscoverFilters from '../components/DiscoverFilters'
 import LoadingSpinner from '../components/LoadingSpinner'
 import SkeletonCard from '../components/SkeletonCard'
+import useInfiniteScroll from '../hooks/useInfiniteScroll'
 
 export default function Discover() {
   const [movies, setMovies] = useState([])
@@ -20,17 +20,48 @@ export default function Discover() {
   const location = useLocation()
   const isTv = location.search.includes('type=tv')
   const pageTitle = isTv ? 'TV Shows' : 'Movies'
-  
-  const { ref, inView } = useInView({
-    threshold: 0,
-    rootMargin: '400px',
+
+  const loadMore = useCallback(async () => {
+    if (isFetchingMore || !hasMore || isLoading) return
+
+    setIsFetchingMore(true)
+    const nextPage = page + 1
+
+    try {
+      const params = {
+        ...filters,
+        with_genres: filters.with_genres.join(','),
+        page: nextPage,
+      }
+      const data = await discoverMovies(params)
+      const newResults = data.results || []
+
+      setMovies((prev) => {
+        const existingIds = new Set(prev.map((movie) => movie.id))
+        const filtered = newResults.filter((movie) => !existingIds.has(movie.id))
+        return [...prev, ...filtered]
+      })
+      setPage(nextPage)
+      setHasMore(data.page < data.total_pages && newResults.length > 0)
+    } catch (err) {
+      console.error('Failed to load more movies:', err)
+    } finally {
+      setIsFetchingMore(false)
+    }
+  }, [page, isFetchingMore, hasMore, isLoading, filters])
+
+  const sentinelRef = useInfiniteScroll({
+    hasMore,
+    isLoading: isLoading || isFetchingMore,
+    onLoadMore: loadMore,
+    enabled: !isLoading,
   })
 
-  // Initial Fetch based on filters
   useEffect(() => {
     const fetchInitial = async () => {
       setIsLoading(true)
       setPage(1)
+      setHasMore(true)
       try {
         const params = {
           ...filters,
@@ -42,48 +73,19 @@ export default function Discover() {
         setHasMore(data.page < data.total_pages)
       } catch (err) {
         console.error('Failed to discover movies:', err)
+        setMovies([])
+        setHasMore(false)
       } finally {
         setIsLoading(false)
       }
     }
 
-    // Debounce to avoid spamming while user changes filters
     const handler = setTimeout(() => {
       fetchInitial()
     }, 500)
 
     return () => clearTimeout(handler)
   }, [filters])
-
-  // Infinite Scroll Fetch
-  const loadMore = useCallback(async () => {
-    if (isFetchingMore || !hasMore || isLoading) return
-
-    setIsFetchingMore(true)
-    const nextPage = page + 1
-    
-    try {
-      const params = {
-        ...filters,
-        with_genres: filters.with_genres.join(','),
-        page: nextPage,
-      }
-      const data = await discoverMovies(params)
-      setMovies(prev => [...prev, ...data.results])
-      setPage(nextPage)
-      setHasMore(data.page < data.total_pages)
-    } catch (err) {
-      console.error('Failed to load more movies:', err)
-    } finally {
-      setIsFetchingMore(false)
-    }
-  }, [page, isFetchingMore, hasMore, isLoading, filters])
-
-  useEffect(() => {
-    if (inView) {
-      loadMore()
-    }
-  }, [inView, loadMore])
 
   return (
     <div className="min-h-screen bg-brand-bg pt-24 pb-16 px-4 sm:px-6 lg:px-8 max-w-screen-xl mx-auto">
@@ -97,7 +99,6 @@ export default function Discover() {
           </p>
         </div>
 
-        {/* Smart Discovery Toggle Button */}
         <button
           type="button"
           onClick={() => setShowSmartDiscovery((v) => !v)}
@@ -107,13 +108,11 @@ export default function Discover() {
               : 'bg-transparent text-brand-gold border-brand-gold hover:bg-brand-gold/10'
           }`}
         >
-          {/* Sliders icon */}
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
               d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
           </svg>
           Smart Discovery
-          {/* Open/close chevron */}
           <svg
             className={`w-4 h-4 transition-transform duration-300 ${showSmartDiscovery ? 'rotate-180' : ''}`}
             fill="none" stroke="currentColor" viewBox="0 0 24 24"
@@ -123,7 +122,6 @@ export default function Discover() {
         </button>
       </div>
 
-      {/* Smart Discovery Panel — animated show/hide */}
       <AnimatePresence initial={false}>
         {showSmartDiscovery && (
           <motion.div
@@ -139,7 +137,6 @@ export default function Discover() {
         )}
       </AnimatePresence>
 
-      {/* Results Header */}
       <h2 className="text-2xl font-bold text-white mb-6">
         {showSmartDiscovery ? 'Filtered Results' : 'Discovery Results'}
       </h2>
@@ -152,14 +149,22 @@ export default function Discover() {
         <>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-5">
             {movies.map((movie, index) => (
-              <MovieCard key={`${movie.id}-${index}`} movie={movie} />
+              <MovieCard key={`${movie.id}-${index}`} movie={movie} lowPriority />
             ))}
+            {isFetchingMore &&
+              Array.from({ length: 6 }).map((_, i) => (
+                <SkeletonCard key={`skeleton-discover-${i}`} />
+              ))}
           </div>
 
-          {/* Infinite Scroll trigger */}
-          <div ref={ref} className="w-full py-12 flex justify-center">
+          <div
+            ref={sentinelRef}
+            className="w-full py-12 flex flex-col items-center justify-center min-h-[120px]"
+          >
             {isFetchingMore && <LoadingSpinner />}
-            {!hasMore && <p className="text-gray-500">You've reached the end of the list.</p>}
+            {!hasMore && (
+              <p className="text-gray-500 font-semibold text-sm">You've reached the end of the list.</p>
+            )}
           </div>
         </>
       ) : (

@@ -3,6 +3,7 @@ import { motion } from 'framer-motion'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { useWatchlist } from '../context/WatchlistContext'
 import { useAuth } from '../context/AuthContext'
+import { tmdbBackdropProps } from '../utils/tmdbImages'
 
 const HERO_INTERVAL_MS = 5000
 const SLIDE_TRANSITION = { duration: 0.65, ease: [0.4, 0, 0.2, 1] }
@@ -14,11 +15,8 @@ const GENRE_MAP = {
   10770: 'TV Movie', 53: 'Thriller', 10752: 'War', 37: 'Western',
 }
 
-function getBackdropUrl(movie) {
-  if (!movie?.backdrop_path) return ''
-  return movie.backdrop_path.startsWith('http')
-    ? movie.backdrop_path
-    : `https://image.tmdb.org/t/p/original${movie.backdrop_path}`
+function getBackdropProps(movie) {
+  return tmdbBackdropProps(movie?.backdrop_path)
 }
 
 function getGenres(movie) {
@@ -77,19 +75,17 @@ function HeroSlideContent({ movie, isAuthenticated, location, navigate, toggleWa
               <InfoIcon />
               Details
             </Link>
-            <button
-              onClick={() => {
-                if (!isAuthenticated) {
-                  navigate('/login', { state: { from: location } })
-                  return
-                }
-                toggleWatchlist(movie)
-              }}
-              className={`btn-secondary text-base ${saved ? '!border-brand-gold-muted !text-brand-gold-muted' : ''}`}
-            >
-              {saved ? <CheckIcon /> : <PlusIcon />}
-              {saved ? 'Saved' : 'My List'}
-            </button>
+            {isAuthenticated && (
+              <button
+                onClick={() => {
+                  toggleWatchlist(movie)
+                }}
+                className={`btn-secondary text-base ${saved ? '!border-brand-gold-muted !text-brand-gold-muted' : ''}`}
+              >
+                {saved ? <CheckIcon /> : <PlusIcon />}
+                {saved ? 'Saved' : 'My List'}
+              </button>
+            )}
           </div>
         </div>
       </div>
@@ -171,16 +167,26 @@ export default function HeroBanner({ movies = [] }) {
           onAnimationComplete={handleLoopComplete}
         >
           {loopMovies.map((m, i) => {
-            const backdrop = getBackdropUrl(m)
+            const backdrop = getBackdropProps(m)
             const hasError = imgErrors[m.id]
+            const slideIndex = i === movies.length ? 0 : i
+            const isNearActive =
+              slideIndex === activeIndex ||
+              slideIndex === activeIndex + 1 ||
+              (activeIndex === movies.length - 1 && slideIndex === 0)
 
             return (
               <div key={`${m.id}-${i}`} className="w-screen h-full relative flex-shrink-0">
-                {!hasError && backdrop ? (
+                {!hasError && backdrop && isNearActive ? (
                   <img
-                    src={backdrop}
+                    src={backdrop.src}
+                    srcSet={backdrop.srcSet}
+                    sizes={backdrop.sizes}
                     alt={m.title}
                     onError={() => setImgErrors((prev) => ({ ...prev, [m.id]: true }))}
+                    loading={i === 0 ? 'eager' : 'lazy'}
+                    decoding="async"
+                    fetchPriority={i === 0 ? 'high' : 'low'}
                     className="absolute inset-0 w-full h-full object-cover object-top"
                   />
                 ) : (

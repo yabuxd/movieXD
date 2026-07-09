@@ -1,18 +1,30 @@
 import { Link } from 'react-router-dom'
-import { motion } from 'framer-motion'
+import { motion, useReducedMotion } from 'framer-motion'
 import { Helmet } from 'react-helmet-async'
 import MovieCard from '../components/MovieCard'
 import { useFavorites } from '../context/FavoritesContext'
 
 export default function Favorites() {
   const { favorites, removeFromFavorites } = useFavorites()
+  const shouldReduceMotion = useReducedMotion()
 
   const sortedFavorites = [...favorites].sort((a, b) => (b.addedAt || 0) - (a.addedAt || 0))
+
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: {
+        staggerChildren: shouldReduceMotion ? 0 : 0.05,
+      },
+    },
+  }
 
   return (
     <>
       <Helmet>
-        <title>My Favorites — CineFlow</title>
+        <title>My Favorites — MovieXD</title>
+        <meta name="description" content="View and manage your favorite movies and shows on MovieXD." />
       </Helmet>
       <div className="min-h-screen bg-brand-bg pt-24 pb-16 px-4 sm:px-6 lg:px-8 max-w-screen-xl mx-auto">
         <div className="mb-10">
@@ -34,9 +46,10 @@ export default function Favorites() {
           </div>
         ) : (
           <motion.div 
-            className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-x-5 gap-y-8"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
+            className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-x-5 gap-y-8"
+            variants={containerVariants}
+            initial="hidden"
+            animate="show"
           >
             {sortedFavorites.map((movie) => (
               <div key={movie.id} className="flex flex-col h-full">

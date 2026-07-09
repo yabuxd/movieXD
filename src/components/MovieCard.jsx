@@ -1,9 +1,10 @@
 import { useState, memo } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
-import { motion } from 'framer-motion'
+import { motion, useReducedMotion } from 'framer-motion'
 import { useWatchlist } from '../context/WatchlistContext'
 import { useAuth } from '../context/AuthContext'
 import { useFavorites } from '../context/FavoritesContext'
+import { tmdbPosterProps } from '../utils/tmdbImages'
 
 const GENRE_MAP = {
   28: 'Action', 12: 'Adventure', 16: 'Animation', 35: 'Comedy', 80: 'Crime',
@@ -12,7 +13,8 @@ const GENRE_MAP = {
   10770: 'TV Movie', 53: 'Thriller', 10752: 'War', 37: 'Western',
 }
 
-const MovieCard = memo(function MovieCard({ movie, variant = 'default' }) {
+const MovieCard = memo(function MovieCard({ movie, variant = 'default', priority = false, lowPriority = false }) {
+  const poster = tmdbPosterProps(movie.poster_path)
   const { isInWatchlist, toggleWatchlist } = useWatchlist()
   const { isFavorite, toggleFavorite } = useFavorites()
   const { isAuthenticated } = useAuth()
@@ -41,10 +43,12 @@ const MovieCard = memo(function MovieCard({ movie, variant = 'default' }) {
   const hoverTitleColor = isAnime ? 'group-hover:text-brand-gold-muted' : 'group-hover:text-brand-gold'
   const accentBg = isAnime ? 'bg-brand-gold-muted' : 'bg-brand-gold'
 
+  const shouldReduceMotion = useReducedMotion()
+
   const itemVariants = {
-    hidden: { opacity: 0, scale: 0.8 },
+    hidden: { opacity: 0, scale: shouldReduceMotion ? 1 : 0.8 },
     show: { opacity: 1, scale: 1 },
-    exit: { opacity: 0, scale: 0.8 },
+    exit: { opacity: 0, scale: shouldReduceMotion ? 1 : 0.8 },
   }
 
   return (
@@ -52,8 +56,8 @@ const MovieCard = memo(function MovieCard({ movie, variant = 'default' }) {
       id={`movie-card-${movie.id}`}
       className="group relative flex-shrink-0 w-40 sm:w-48 md:w-52 cursor-pointer"
       variants={itemVariants}
-      whileHover={{ y: -6, scale: 1.05 }}
-      transition={{ duration: 0.3, ease: 'easeOut' }}
+      whileHover={shouldReduceMotion ? {} : { y: -6, scale: 1.05 }}
+      transition={{ duration: shouldReduceMotion ? 0.05 : 0.3, ease: 'easeOut' }}
     >
       <div
         className={`relative rounded-2xl overflow-hidden bg-brand-card aspect-[2/3] shadow-card border border-transparent group-hover:border-[#D4AF37]/50 transition-all duration-300 ${glowClass} ${
@@ -65,30 +69,39 @@ const MovieCard = memo(function MovieCard({ movie, variant = 'default' }) {
             <div className="absolute inset-0 skeleton rounded-2xl" />
           )}
 
-          {!imgError ? (
+          {!imgError && poster ? (
             <img
-              src={
-                movie.poster_path
-                  ? movie.poster_path.startsWith('http')
-                    ? movie.poster_path
-                    : `https://image.tmdb.org/t/p/w500${movie.poster_path}`
-                  : ''
-              }
+              src={poster.src}
+              srcSet={poster.srcSet}
+              sizes={poster.sizes}
               alt={movie.title}
               onLoad={() => setImgLoaded(true)}
               onError={() => setImgError(true)}
-              loading="lazy"
-              className={`w-full h-full object-cover transition-all duration-500 group-hover:scale-105 ${
+              loading={priority ? 'eager' : 'lazy'}
+              decoding="async"
+              fetchPriority={priority ? 'high' : lowPriority ? 'low' : 'auto'}
+              className={`w-full h-full object-cover transition-opacity duration-75 group-hover:scale-105 ${
                 imgLoaded ? 'opacity-100' : 'opacity-0'
               }`}
             />
-          ) : (
+          ) : imgError ? (
             <div className="w-full h-full flex flex-col items-center justify-center bg-brand-card p-3 text-center">
               <FilmIcon className="text-brand-muted mb-2 w-8 h-8" />
               <span className="text-brand-muted text-xs leading-tight">{movie.title}</span>
             </div>
+          ) : (
+            <div className="absolute inset-0 skeleton rounded-2xl" />
           )}
         </Link>
+
+        {movie.progress !== undefined && (
+          <div className="absolute bottom-0 inset-x-0 h-1.5 bg-black/60 z-20">
+            <div
+              className="bg-brand-gold h-full transition-all duration-300"
+              style={{ width: `${movie.progress}%` }}
+            />
+          </div>
+        )}
 
         <div className="absolute inset-x-0 bottom-0 h-[40%] bg-card-gradient opacity-40 group-hover:opacity-100 transition-opacity duration-400 rounded-b-2xl pointer-events-none z-[1]" />
 
@@ -101,54 +114,54 @@ const MovieCard = memo(function MovieCard({ movie, variant = 'default' }) {
           </div>
         )}
 
-        <button
-          type="button"
-          id={`watchlist-toggle-${movie.id}`}
-          onClick={() => {
-            if (!isAuthenticated) {
-              navigate('/login', { state: { from: location } })
-              return
-            }
-            toggleWatchlist(movie)
-          }}
-          className={`absolute top-3 right-3 z-20 w-8 h-8 rounded-full glass flex items-center justify-center transition-all duration-300 opacity-0 group-hover:opacity-100 translate-y-1 group-hover:translate-y-0 ${
-            inWatchlist ? `${accentBg} text-brand-bg` : 'text-brand-muted hover:text-brand-text'
-          }`}
-          aria-label={inWatchlist ? 'Remove from watchlist' : 'Add to watchlist'}
-        >
-          {inWatchlist ? (
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
-            </svg>
-          ) : (
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-            </svg>
-          )}
-        </button>
+        {isAuthenticated && (
+          <>
+            <button
+              type="button"
+              id={`watchlist-toggle-${movie.id}`}
+              onClick={() => {
+                toggleWatchlist(movie)
+              }}
+              className={`absolute top-3 right-3 z-20 w-8 h-8 rounded-full glass flex items-center justify-center transition-all duration-300 opacity-0 group-hover:opacity-100 translate-y-1 group-hover:translate-y-0 ${
+                inWatchlist ? `${accentBg} text-brand-bg` : 'text-brand-muted hover:text-brand-text'
+              }`}
+              aria-label={inWatchlist ? 'Remove from watchlist' : 'Add to watchlist'}
+            >
+              {inWatchlist ? (
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                </svg>
+              ) : (
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                </svg>
+              )}
+            </button>
 
-        <button
-          type="button"
-          id={`favorite-toggle-${movie.id}`}
-          onClick={() => toggleFavorite(movie)}
-          className={`absolute top-12 right-3 z-20 w-8 h-8 rounded-full glass flex items-center justify-center transition-all duration-300 ${
-            isFav
-              ? 'bg-red-500 text-white opacity-100'
-              : 'text-brand-muted hover:text-red-400 opacity-0 group-hover:opacity-100 translate-y-1 group-hover:translate-y-0'
-          }`}
-          aria-label={isFav ? 'Remove from favorites' : 'Add to favorites'}
-          aria-pressed={isFav}
-        >
-          {isFav ? (
-            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-            </svg>
-          ) : (
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-            </svg>
-          )}
-        </button>
+            <button
+              type="button"
+              id={`favorite-toggle-${movie.id}`}
+              onClick={() => toggleFavorite(movie)}
+              className={`absolute top-12 right-3 z-20 w-8 h-8 rounded-full glass flex items-center justify-center transition-all duration-300 ${
+                isFav
+                  ? 'bg-red-500 text-white opacity-100'
+                  : 'text-brand-muted hover:text-red-400 opacity-0 group-hover:opacity-100 translate-y-1 group-hover:translate-y-0'
+              }`}
+              aria-label={isFav ? 'Remove from favorites' : 'Add to favorites'}
+              aria-pressed={isFav}
+            >
+              {isFav ? (
+                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                </svg>
+              ) : (
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                </svg>
+              )}
+            </button>
+          </>
+        )}
 
         <div className="absolute inset-0 z-[1] flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none">
           <div className="w-14 h-14 glass rounded-full flex items-center justify-center shadow-glow-gold">

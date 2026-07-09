@@ -11,23 +11,35 @@ import { auth, googleProvider, isConfigured } from '../services/firebase'
 
 const AuthContext = createContext(null)
 
+const useMockAuth = import.meta.env.DEV && !isConfigured
+
+function readStoredUser() {
+  const saved = localStorage.getItem('auth_user')
+  return saved ? JSON.parse(saved) : null
+}
+
 export function AuthProvider({ children }) {
   const [currentUser, setCurrentUser] = useState(() => {
-    const saved = localStorage.getItem('auth_user')
-    return saved ? JSON.parse(saved) : null
+    if (isConfigured) return null
+    return useMockAuth ? readStoredUser() : null
   })
-  // If Firebase is configured it needs a moment to resolve auth state; otherwise we're ready
   const [loading, setLoading] = useState(isConfigured)
   const [error, setError] = useState(null)
 
-  // Seed a default demo user for the mock (non-Firebase) auth path
+  const syncSession = (userObj) => {
+    setCurrentUser(userObj)
+    localStorage.setItem('auth_user', JSON.stringify(userObj))
+    return userObj
+  }
+
+  // Seed a default demo user for dev-only mock auth
   useEffect(() => {
-    if (!isConfigured) {
-      if (!localStorage.getItem('auth_users')) {
-        localStorage.setItem('auth_users', JSON.stringify([
-          { id: 'demo-user-id', email: 'user@example.com', passwordHash: 'password123' },
-        ]))
-      }
+    if (!useMockAuth) return
+
+    if (!localStorage.getItem('auth_users')) {
+      localStorage.setItem('auth_users', JSON.stringify([
+        { id: 'demo-user-id', email: 'user@example.com', passwordHash: 'password123' },
+      ]))
     }
   }, [])
 
@@ -50,6 +62,12 @@ export function AuthProvider({ children }) {
     return unsubscribe
   }, [])
 
+  const firebaseNotConfiguredError = () => {
+    const msg = 'Authentication is not configured. Set VITE_FIREBASE_* environment variables.'
+    setError(msg)
+    return new Error(msg)
+  }
+
   // ── EMAIL / PASSWORD LOGIN ──────────────────────────────────────────────────
   const login = (email, password) => {
     setLoading(true)
@@ -58,8 +76,9 @@ export function AuthProvider({ children }) {
     if (isConfigured) {
       return signInWithEmailAndPassword(auth, email, password)
         .then((result) => {
+          const userObj = syncSession(mapFirebaseUser(result.user))
           setLoading(false)
-          return mapFirebaseUser(result.user)
+          return userObj
         })
         .catch((err) => {
           const message = getFirebaseErrorMessage(err.code)
@@ -69,7 +88,12 @@ export function AuthProvider({ children }) {
         })
     }
 
-    // Mock (localStorage) path
+    if (!useMockAuth) {
+      setLoading(false)
+      return Promise.reject(firebaseNotConfiguredError())
+    }
+
+    // Mock (localStorage) path — dev only
     return new Promise((resolve, reject) => {
       setTimeout(() => {
         const users = JSON.parse(localStorage.getItem('auth_users') || '[]')
@@ -78,8 +102,7 @@ export function AuthProvider({ children }) {
         )
         if (found) {
           const userObj = { id: found.id, email: found.email, username: found.email.split('@')[0] }
-          setCurrentUser(userObj)
-          localStorage.setItem('auth_user', JSON.stringify(userObj))
+          syncSession(userObj)
           setLoading(false)
           resolve(userObj)
         } else {
@@ -95,7 +118,9 @@ export function AuthProvider({ children }) {
   // ── GOOGLE SIGN-IN ──────────────────────────────────────────────────────────
   const loginWithGoogle = () => {
     if (!isConfigured) {
-      const msg = 'Google sign-in requires Firebase credentials. Add them to your .env file.'
+      const msg = useMockAuth
+        ? 'Google sign-in requires Firebase credentials. Add them to your .env file.'
+        : 'Authentication is not configured. Set VITE_FIREBASE_* environment variables.'
       setError(msg)
       return Promise.reject(new Error(msg))
     }
@@ -105,8 +130,9 @@ export function AuthProvider({ children }) {
 
     return signInWithPopup(auth, googleProvider)
       .then((result) => {
+        const userObj = syncSession(mapFirebaseUser(result.user))
         setLoading(false)
-        return mapFirebaseUser(result.user)
+        return userObj
       })
       .catch((err) => {
         console.error('[Google Sign-In] Firebase error code:', err.code, err.message)
@@ -125,8 +151,9 @@ export function AuthProvider({ children }) {
     if (isConfigured) {
       return createUserWithEmailAndPassword(auth, email, password)
         .then((result) => {
+          const userObj = syncSession(mapFirebaseUser(result.user))
           setLoading(false)
-          return mapFirebaseUser(result.user)
+          return userObj
         })
         .catch((err) => {
           const message = getFirebaseErrorMessage(err.code)
@@ -136,7 +163,12 @@ export function AuthProvider({ children }) {
         })
     }
 
-    // Mock path
+    if (!useMockAuth) {
+      setLoading(false)
+      return Promise.reject(firebaseNotConfiguredError())
+    }
+
+    // Mock path — dev only
     return new Promise((resolve, reject) => {
       setTimeout(() => {
         const users = JSON.parse(localStorage.getItem('auth_users') || '[]')
@@ -151,8 +183,7 @@ export function AuthProvider({ children }) {
           users.push(newUser)
           localStorage.setItem('auth_users', JSON.stringify(users))
           const userObj = { id: newUser.id, email: newUser.email, username: newUser.email.split('@')[0] }
-          setCurrentUser(userObj)
-          localStorage.setItem('auth_user', JSON.stringify(userObj))
+          syncSession(userObj)
           setLoading(false)
           resolve(userObj)
         }
@@ -166,8 +197,6 @@ export function AuthProvider({ children }) {
       return Promise.reject(new Error('Password reset requires Firebase. Please use email/password sign-in.'))
     }
 
-    // continueUrl tells Firebase where to send the user after they reset their password.
-    // window.location.origin works on both localhost and movyxd.netlify.app automatically.
     const actionCodeSettings = {
       url: `${window.location.origin}/login`,
       handleCodeInApp: false,
@@ -196,6 +225,8 @@ export function AuthProvider({ children }) {
         isAuthenticated: !!currentUser,
         loading,
         error,
+        isConfigured,
+        useMockAuth,
         login,
         loginWithGoogle,
         register,
@@ -233,7 +264,7 @@ function getFirebaseErrorMessage(code) {
     case 'auth/email-already-in-use':
       return 'A user with this email already exists.'
     case 'auth/weak-password':
-      return 'Password must be at least 6 characters.'
+      return 'Password must be at least 8 characters and contain at least 1 number.'
     case 'auth/invalid-email':
       return 'Please enter a valid email address.'
     case 'auth/popup-closed-by-user':
