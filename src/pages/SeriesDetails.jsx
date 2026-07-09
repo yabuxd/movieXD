@@ -25,6 +25,7 @@ export default function SeriesDetails() {
   const [error, setError] = useState(null)
   const [episodesBySeason, setEpisodesBySeason] = useState({})
   const [loadingSeasons, setLoadingSeasons] = useState({})
+  const [selectedSeason, setSelectedSeason] = useState(null)
   const [selectedEpisode, setSelectedEpisode] = useState(null)
   const [sidebarOpen, setSidebarOpen] = useState(false)
 
@@ -58,6 +59,7 @@ export default function SeriesDetails() {
 
   const playEpisode = useCallback((episode, showData) => {
     setSelectedEpisode(episode)
+    setSelectedSeason(episode.season_number)
     const showTitle = getMediaTitle(showData)
     const episodeLabel = `S${episode.season_number}E${episode.episode_number}`
     const trailer = showData.videos?.results?.find(
@@ -68,10 +70,16 @@ export default function SeriesDetails() {
       showTitle,
       trailer?.key,
       true,
-      episodeLabel
+      episodeLabel,
+      getMediaYear(showData)
     )
     setSidebarOpen(false)
   }, [resolvePlayer])
+
+  const handleSeasonChange = useCallback((seasonNumber) => {
+    setSelectedSeason(seasonNumber)
+    loadSeason(seasonNumber)
+  }, [loadSeason])
 
   useEffect(() => {
     const fetchDetail = async () => {
@@ -79,6 +87,7 @@ export default function SeriesDetails() {
       setError(null)
       resetPlayer()
       setEpisodesBySeason({})
+      setSelectedSeason(null)
       setSelectedEpisode(null)
 
       try {
@@ -91,6 +100,7 @@ export default function SeriesDetails() {
         )
 
         if (firstSeason) {
+          setSelectedSeason(firstSeason.season_number)
           const seasonData = await getTvSeasonDetails(id, firstSeason.season_number)
           const episodes = seasonData.episodes || []
           setEpisodesBySeason({ [firstSeason.season_number]: episodes })
@@ -182,6 +192,8 @@ export default function SeriesDetails() {
               seasons={series.seasons || []}
               episodesBySeason={episodesBySeason}
               loadingSeasons={loadingSeasons}
+              selectedSeason={selectedSeason}
+              onSeasonChange={handleSeasonChange}
               selectedEpisode={selectedEpisode}
               onSelectEpisode={(ep) => playEpisode(ep, series)}
               onExpandSeason={loadSeason}

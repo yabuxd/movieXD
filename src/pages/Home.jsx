@@ -9,6 +9,7 @@ import SkeletonCard from '../components/SkeletonCard'
 import LoadingSpinner from '../components/LoadingSpinner'
 import useInfiniteScroll from '../hooks/useInfiniteScroll'
 import { getTrending, getPopular, getTopRated, getUpcoming, discoverMovies } from '../services/tmdb'
+import { normalizeMovieResults } from '../utils/media'
 import { useContinueWatching } from '../context/ContinueWatchingContext'
 
 export default function Home() {
@@ -59,7 +60,8 @@ export default function Home() {
           )
         }
 
-        const extract = (res) => res.status === 'fulfilled' ? (res.value?.results || []) : []
+        const extract = (res) =>
+          res.status === 'fulfilled' ? normalizeMovieResults(res.value?.results, 'movie') : []
 
         const trendingData = extract(trendingRes)
         const popularData = extract(popularRes)
@@ -104,7 +106,7 @@ export default function Home() {
     setIsLoadingMore(true)
     try {
       const data = await getPopular(page)
-      const newMovies = data.results || []
+      const newMovies = normalizeMovieResults(data.results, 'movie')
       
       const filtered = newMovies.filter(m => m && !loadedIdsRef.current.has(m.id))
       filtered.forEach(m => loadedIdsRef.current.add(m.id))

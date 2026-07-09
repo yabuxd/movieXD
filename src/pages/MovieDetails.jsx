@@ -47,7 +47,7 @@ export default function MovieDetails() {
         const trailer = data.videos?.results?.find(
           (v) => v.site === 'YouTube' && v.type === 'Trailer'
         ) || data.videos?.results?.find((v) => v.site === 'YouTube')
-        resolvePlayer(data.title, trailer?.key, false)
+        resolvePlayer(data.title, trailer?.key, false, null, getMediaYear(data))
       } catch (err) {
         console.error('Failed to load movie details:', err)
         setError('Failed to load movie details. Please try again.')

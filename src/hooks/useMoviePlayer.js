@@ -7,13 +7,35 @@ const cleanTitle = (title = '') =>
     .replace(/[^a-z0-9\s:]/g, '')
     .trim()
 
-function titleMatches(candidate, title) {
+function titleMatches(candidate, title, year = null) {
   const source = cleanTitle(candidate)
   const target = cleanTitle(title)
-  const targetLead = target.split(':')[0]
-  const sourceLead = source.split(':')[0]
+  if (!source || !target) return false
 
-  return source.includes(targetLead) || target.includes(sourceLead)
+  const targetLead = target.split(':')[0].trim()
+  const sourceLead = source.split(':')[0].trim()
+  if (targetLead.length < 2 || sourceLead.length < 2) return false
+
+  const hasTitleMatch =
+    source.includes(targetLead) ||
+    target.includes(sourceLead) ||
+    sourceLead.includes(targetLead) ||
+    targetLead.includes(sourceLead)
+
+  if (!hasTitleMatch) return false
+
+  if (year) {
+    const yearStr = String(year)
+    if (candidate.includes(yearStr) || source.includes(yearStr)) return true
+    // Allow match when archive title omits year but title otherwise aligns
+    return targetLead.length >= 4
+  }
+
+  return true
+}
+
+function escapeArchiveTerm(term = '') {
+  return term.replace(/[()]/g, '').trim()
 }
 
 export default function useMoviePlayer() {
@@ -56,7 +78,7 @@ export default function useMoviePlayer() {
   }, [])
 
   const resolve = useCallback(
-    async (title, trailerKey, isTv = false, episodeLabel = null) => {
+    async (title, trailerKey, isTv = false, episodeLabel = null, year = null) => {
       setPlayerState({
         source: null,
         embedUrl: null,
@@ -69,9 +91,11 @@ export default function useMoviePlayer() {
         },
       })
 
+      const safeTitle = escapeArchiveTerm(title)
+      const yearSuffix = year ? ` ${year}` : ''
       const searchQuery = episodeLabel
         ? `${title} ${episodeLabel} full episode`
-        : `${title} ${isTv ? 'full episodes' : 'full movie'}`
+        : `${title}${yearSuffix} ${isTv ? 'full episode' : 'full movie'}`
       const youtubeUrl = `https://www.youtube.com/embed?listType=search&list=${encodeURIComponent(
         searchQuery
       )}&autoplay=1`
@@ -82,18 +106,21 @@ export default function useMoviePlayer() {
       let archiveUrl = null
 
       try {
+        const yearClause = year && !episodeLabel ? ` AND year:(${year})` : ''
         const queryStr = episodeLabel
-          ? `title:(${title}) AND title:(${episodeLabel})`
+          ? `title:(${safeTitle}) AND title:(${episodeLabel}) AND mediatype:(movies)`
           : isTv
-            ? `title:(${title})`
-            : `title:(${title}) AND mediatype:(movies)`
+            ? `title:(${safeTitle}) AND mediatype:(movies)`
+            : `title:(${safeTitle}) AND mediatype:(movies)${yearClause}`
         const query = encodeURIComponent(queryStr)
         const response = await fetch(
-          `https://archive.org/advancedsearch.php?q=${query}&fl[]=identifier&fl[]=title&fl[]=mediatype&rows=10&output=json`
+          `https://archive.org/advancedsearch.php?q=${query}&fl[]=identifier&fl[]=title&fl[]=mediatype&fl[]=year&rows=15&output=json`
         )
         const data = await response.json()
-        const items = data?.response?.docs || []
-        const match = items.find((item) => titleMatches(item.title, title)) || items[0]
+        const items = (data?.response?.docs || []).filter(
+          (item) => !item.mediatype || item.mediatype === 'movies' || item.mediatype === 'video'
+        )
+        const match = items.find((item) => titleMatches(item.title, title, year))
 
         if (match?.identifier) {
           archiveUrl = `https://archive.org/embed/${match.identifier}`
@@ -109,19 +136,18 @@ export default function useMoviePlayer() {
           trailer: trailerUrl,
         }
 
-        // Determine primary and fallback active source
         let activeSource = null
         let activeUrl = null
 
         if (archiveUrl) {
           activeSource = 'archive'
           activeUrl = archiveUrl
-        } else if (youtubeUrl) {
-          activeSource = 'youtube'
-          activeUrl = youtubeUrl
         } else if (trailerUrl) {
           activeSource = 'trailer'
           activeUrl = trailerUrl
+        } else if (youtubeUrl) {
+          activeSource = 'youtube'
+          activeUrl = youtubeUrl
         }
 
         if (!activeSource) {

@@ -80,7 +80,9 @@ export default async (request, context) => {
   // Build TMDB URL — forward allowed query params, inject key
   const tmdbUrl = new URL(`https://api.themoviedb.org/3${tmdbPath}`)
   const SAFE_PARAMS = ['page', 'query', 'with_genres', 'sort_by', 'vote_average.gte',
-    'primary_release_year', 'with_original_language', 'append_to_response', 'language']
+    'vote_count.gte', 'with_runtime.gte', 'first_air_date_year',
+    'primary_release_year', 'with_original_language', 'append_to_response', 'language',
+    'include_adult', 'include_video']
   url.searchParams.forEach((value, key) => {
     if (SAFE_PARAMS.includes(key)) tmdbUrl.searchParams.set(key, value)
   })

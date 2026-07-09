@@ -7,6 +7,7 @@ import SkeletonCard from '../components/SkeletonCard'
 import LoadingSpinner from '../components/LoadingSpinner'
 import useInfiniteScroll from '../hooks/useInfiniteScroll'
 import { searchMovies, getPopular, getGenres, discoverMovies } from '../services/tmdb'
+import { normalizeMovieResults } from '../utils/media'
 
 const SORT_OPTIONS = [
   { value: 'default', label: 'Default' },
@@ -107,17 +108,17 @@ export default function Search() {
             if (yearMatch) params.primary_release_year = yearMatch[0]
             
             const data = await discoverMovies(params)
-            newData = data.results || []
+            newData = normalizeMovieResults(data.results, 'movie')
             totalPages = data.total_pages
           } else {
             // Use Search API for normal title queries
             const data = await searchMovies(debouncedQ, page)
-            newData = data.results || []
+            newData = normalizeMovieResults(data.results, 'movie')
             totalPages = data.total_pages
           }
         } else {
           const data = await getPopular(page)
-          newData = data.results || []
+          newData = normalizeMovieResults(data.results, 'movie')
           totalPages = data.total_pages
         }
 

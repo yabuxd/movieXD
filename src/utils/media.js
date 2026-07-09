@@ -12,18 +12,30 @@ export function getMediaYear(item) {
 }
 
 export function getMediaPath(item) {
-  const type = item?.media_type || (item?.first_air_date && !item?.release_date ? 'tv' : 'movie')
-  return type === 'tv' ? `/tv/${item.id}` : `/movie/${item.id}`
+  if (item?.media_type === 'tv') return `/tv/${item.id}`
+  if (item?.media_type === 'movie') return `/movie/${item.id}`
+  if (item?.name && !item?.title) return `/tv/${item.id}`
+  return `/movie/${item.id}`
 }
 
-export function normalizeMedia(item) {
+export function normalizeMedia(item, mediaType = null) {
   if (!item) return item
+  const resolvedType =
+    mediaType ||
+    item.media_type ||
+    (item.name && !item.title ? 'tv' : 'movie')
   return {
     ...item,
     title: getMediaTitle(item),
     release_date: getMediaDate(item),
-    media_type: item.media_type || (item.first_air_date && !item.release_date ? 'tv' : 'movie'),
+    media_type: resolvedType,
   }
+}
+
+export function normalizeMovieResults(results = [], mediaType = 'movie') {
+  return results
+    .filter((item) => item && item.id)
+    .map((item) => normalizeMedia(item, mediaType))
 }
 
 export function getGenreIds(item) {

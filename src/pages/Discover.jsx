@@ -3,6 +3,7 @@ import { useLocation } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { discoverMovies, discoverTv } from '../services/tmdb'
 import { useDiscoverStore } from '../store/discoverStore'
+import { normalizeMovieResults } from '../utils/media'
 import MovieCard from '../components/MovieCard'
 import DiscoverFilters from '../components/DiscoverFilters'
 import LoadingSpinner from '../components/LoadingSpinner'
@@ -35,10 +36,7 @@ export default function Discover() {
       }
       const discoverFn = isTv ? discoverTv : discoverMovies
       const data = await discoverFn(params)
-      const newResults = (data.results || []).map((item) => ({
-        ...item,
-        media_type: isTv ? 'tv' : 'movie',
-      }))
+      const newResults = normalizeMovieResults(data.results, isTv ? 'tv' : 'movie')
 
       setMovies((prev) => {
         const existingIds = new Set(prev.map((movie) => movie.id))
@@ -74,10 +72,7 @@ export default function Discover() {
         }
         const discoverFn = isTv ? discoverTv : discoverMovies
         const data = await discoverFn(params)
-        setMovies((data.results || []).map((item) => ({
-          ...item,
-          media_type: isTv ? 'tv' : 'movie',
-        })))
+        setMovies(normalizeMovieResults(data.results, isTv ? 'tv' : 'movie'))
         setHasMore(data.page < data.total_pages)
       } catch (err) {
         console.error('Failed to discover movies:', err)

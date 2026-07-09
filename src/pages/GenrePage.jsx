@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { discoverMovies, getGenres } from '../services/tmdb'
+import { normalizeMovieResults } from '../utils/media'
 import MovieCard from '../components/MovieCard'
 import LoadingSpinner from '../components/LoadingSpinner'
 import SkeletonCard from '../components/SkeletonCard'
@@ -28,7 +29,7 @@ export default function GenrePage() {
         page: nextPage,
         sort_by: 'popularity.desc',
       })
-      const newResults = data.results || []
+      const newResults = normalizeMovieResults(data.results, 'movie')
 
       setMovies((prev) => {
         const existingIds = new Set(prev.map((movie) => movie.id))
@@ -77,7 +78,7 @@ export default function GenrePage() {
           page: 1,
           sort_by: 'popularity.desc',
         })
-        setMovies(data.results || [])
+        setMovies(normalizeMovieResults(data.results, 'movie'))
         setHasMore(data.page < data.total_pages)
         setTotalResults(data.total_results)
       } catch (err) {

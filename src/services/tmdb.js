@@ -20,12 +20,22 @@ const tmdbApi = axios.create({
 // Simple in-memory cache to ensure fast retrieval
 const apiCache = new Map()
 
+const cleanParams = (params = {}) =>
+  Object.fromEntries(
+    Object.entries(params).filter(([, value]) => {
+      if (value === '' || value === undefined || value === null) return false
+      if (Array.isArray(value) && value.length === 0) return false
+      return true
+    })
+  )
+
 const getCached = async (url, params = {}) => {
-  const cacheKey = `${url}?${JSON.stringify(params)}`
+  const cleaned = cleanParams(params)
+  const cacheKey = `${url}?${JSON.stringify(cleaned)}`
   if (apiCache.has(cacheKey)) {
     return apiCache.get(cacheKey)
   }
-  const response = await tmdbApi.get(url, { params })
+  const response = await tmdbApi.get(url, { params: cleaned })
   apiCache.set(cacheKey, response.data)
   return response.data
 }
@@ -61,7 +71,11 @@ export const getGenres = async () => {
 }
 
 export const discoverMovies = async (params) => {
-  return getCached('/discover/movie', params)
+  return getCached('/discover/movie', {
+    include_adult: false,
+    include_video: false,
+    ...params,
+  })
 }
 
 export const getMovieRecommendations = async (id) => {
@@ -79,7 +93,10 @@ export const getTvSeasonDetails = async (tvId, seasonNumber) => {
 }
 
 export const discoverTv = async (params) => {
-  return getCached('/discover/tv', params)
+  return getCached('/discover/tv', {
+    include_adult: false,
+    ...params,
+  })
 }
 
 export const getTvGenres = async () => {
