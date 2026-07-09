@@ -6,9 +6,10 @@ import { useAuth } from '../context/AuthContext'
 
 export default function RootLayout() {
   const location = useLocation()
-  const { loading } = useAuth()
+  const { initializing } = useAuth()
+  const isAuthPage = location.pathname === '/login' || location.pathname === '/register'
 
-  if (loading) {
+  if (initializing && !isAuthPage) {
     return (
       <div className="min-h-screen bg-brand-bg flex items-center justify-center">
         <LoadingSpinner />
@@ -19,7 +20,7 @@ export default function RootLayout() {
   return (
     <div className="min-h-screen bg-brand-bg text-brand-text">
       <div className="fixed inset-0 bg-cinematic-mesh pointer-events-none z-0" />
-      <Navbar />
+      {!isAuthPage && <Navbar />}
       <main className="relative z-[1]">
         <AnimatePresence mode="wait">
           <motion.div

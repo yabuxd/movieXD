@@ -1,13 +1,29 @@
 import { useState } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import AuthStatusFooter from '../components/AuthStatusFooter'
+import {
+  validateEmail,
+  validatePassword,
+  validatePasswordMatch,
+} from '../utils/authValidation'
 
 export default function Register() {
   const navigate = useNavigate()
   const location = useLocation()
-  const { register, loading, error, setError } = useAuth()
+  const {
+    register,
+    error,
+    setError,
+    isConfigured,
+    useMockAuth,
+    authEnabled,
+    firebaseProjectId,
+    configIssues,
+  } = useAuth()
   const [form, setForm] = useState({ email: '', password: '', confirmPassword: '' })
   const [fieldErrors, setFieldErrors] = useState({ email: '', password: '', confirmPassword: '' })
+  const [formLoading, setFormLoading] = useState(false)
 
   const from = location.state?.from?.pathname || '/'
 
@@ -18,64 +34,36 @@ export default function Register() {
   }
 
   const validateForm = () => {
-    const errors = { email: '', password: '', confirmPassword: '' }
-    let isValid = true
-
-    // Email validation
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-    if (!form.email) {
-      errors.email = 'Email is required'
-      isValid = false
-    } else if (!emailRegex.test(form.email)) {
-      errors.email = 'Invalid email format'
-      isValid = false
+    const errors = {
+      email: validateEmail(form.email),
+      password: validatePassword(form.password),
+      confirmPassword: validatePasswordMatch(form.password, form.confirmPassword),
     }
-
-    // Password validation
-    if (!form.password) {
-      errors.password = 'Password is required'
-      isValid = false
-    } else if (form.password.length < 8) {
-      errors.password = 'Password must be at least 8 characters'
-      isValid = false
-    } else if (!/\d/.test(form.password)) {
-      errors.password = 'Password must contain at least 1 number'
-      isValid = false
-    }
-
-    // Confirm password validation
-    if (!form.confirmPassword) {
-      errors.confirmPassword = 'Confirm password is required'
-      isValid = false
-    } else if (form.password !== form.confirmPassword) {
-      errors.confirmPassword = 'Passwords do not match'
-      isValid = false
-    }
-
     setFieldErrors(errors)
-    return isValid
+    return !Object.values(errors).some(Boolean)
   }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
     if (!validateForm()) return
 
+    setFormLoading(true)
     try {
       await register(form.email, form.password)
       navigate(from, { replace: true })
-    } catch (err) {
+    } catch {
       // Error handled by AuthContext
+    } finally {
+      setFormLoading(false)
     }
   }
 
   return (
     <div className="min-h-screen bg-brand-bg flex items-center justify-center px-4 relative overflow-hidden">
-      {/* Background decorations */}
       <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-brand-gold/10 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute bottom-1/4 left-1/4 w-64 h-64 bg-brand-gold-muted/10 rounded-full blur-3xl pointer-events-none" />
 
       <div className="relative z-10 w-full max-w-md my-8">
-        {/* Logo */}
         <div className="text-center mb-8">
           <Link to="/" className="inline-flex items-center gap-2 group">
             <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-brand-gold to-brand-gold-muted flex items-center justify-center shadow-glow-gold group-hover:scale-110 transition-transform">
@@ -91,12 +79,11 @@ export default function Register() {
           <p className="text-gray-500 text-sm mt-2">Create your cinematic account</p>
         </div>
 
-        {/* Card */}
         <div className="glass rounded-2xl border border-brand-border shadow-2xl overflow-hidden">
-          {/* Header Switcher */}
           <div className="flex">
             <Link
               to="/login"
+              state={location.state}
               className="flex-1 py-4 text-center text-sm font-semibold text-gray-500 hover:text-gray-300 border-b border-brand-border transition-all duration-200"
             >
               Sign In
@@ -107,7 +94,6 @@ export default function Register() {
           </div>
 
           <form onSubmit={handleSubmit} className="p-6 sm:p-8 space-y-5">
-            {/* Display general auth error */}
             {error && (
               <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 text-sm flex items-center gap-2">
                 <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -157,6 +143,7 @@ export default function Register() {
               {fieldErrors.password && (
                 <p className="text-red-500 text-xs mt-1">{fieldErrors.password}</p>
               )}
+              <p className="text-gray-600 text-xs mt-1">At least 8 characters with 1 number</p>
             </div>
 
             <div>
@@ -183,10 +170,10 @@ export default function Register() {
             <button
               id="auth-submit-btn"
               type="submit"
-              disabled={loading}
+              disabled={formLoading || !authEnabled}
               className="w-full btn-primary justify-center py-3.5 text-base rounded-xl mt-2"
             >
-              {loading ? (
+              {formLoading ? (
                 <span className="flex items-center gap-2">
                   <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
@@ -202,11 +189,16 @@ export default function Register() {
         </div>
 
         <p className="text-center text-gray-600 text-xs mt-6">
-          By continuing, you agree to MovieXD's{' '}
-          <span className="text-gray-400 hover:text-white cursor-pointer transition-colors">Terms of Service</span>{' '}
-          and{' '}
-          <span className="text-gray-400 hover:text-white cursor-pointer transition-colors">Privacy Policy</span>.
+          By continuing, you agree to MovieXD's Terms of Service and Privacy Policy.
         </p>
+
+        <AuthStatusFooter
+          isConfigured={isConfigured}
+          useMockAuth={useMockAuth}
+          authEnabled={authEnabled}
+          firebaseProjectId={firebaseProjectId}
+          configIssues={configIssues}
+        />
       </div>
     </div>
   )

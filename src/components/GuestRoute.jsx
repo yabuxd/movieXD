@@ -1,11 +1,13 @@
-import { Navigate } from 'react-router-dom'
+import { Navigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import LoadingSpinner from './LoadingSpinner'
 
 export default function GuestRoute({ children }) {
-  const { isAuthenticated, loading } = useAuth()
+  const { isAuthenticated, initializing } = useAuth()
+  const location = useLocation()
+  const redirectTo = location.state?.from?.pathname || '/'
 
-  if (loading) {
+  if (initializing) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-brand-bg">
         <LoadingSpinner />
@@ -14,7 +16,7 @@ export default function GuestRoute({ children }) {
   }
 
   if (isAuthenticated) {
-    return <Navigate to="/" replace />
+    return <Navigate to={redirectTo} replace />
   }
 
   return children

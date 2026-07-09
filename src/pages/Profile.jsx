@@ -45,9 +45,17 @@ export default function Profile() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
             {/* User Profile Card */}
             <div className="md:col-span-1 glass rounded-2xl border border-brand-border p-6 text-center space-y-4 shadow-2xl">
-              <div className="w-20 h-20 mx-auto rounded-full bg-gradient-to-br from-brand-gold to-brand-gold-muted flex items-center justify-center text-2xl font-black text-brand-bg shadow-glow-gold">
-                {currentUser?.username ? currentUser.username.slice(0, 2).toUpperCase() : 'MX'}
-              </div>
+              {currentUser?.photoURL ? (
+                <img
+                  src={currentUser.photoURL}
+                  alt={currentUser.username}
+                  className="w-20 h-20 mx-auto rounded-full object-cover border-2 border-brand-gold shadow-glow-gold"
+                />
+              ) : (
+                <div className="w-20 h-20 mx-auto rounded-full bg-gradient-to-br from-brand-gold to-brand-gold-muted flex items-center justify-center text-2xl font-black text-brand-bg shadow-glow-gold">
+                  {currentUser?.username ? currentUser.username.slice(0, 2).toUpperCase() : 'MX'}
+                </div>
+              )}
               <div>
                 <h2 className="text-lg font-bold text-white truncate">{currentUser?.username}</h2>
                 <p className="text-[10px] text-brand-gold font-medium tracking-wide mt-0.5 uppercase">VIP Member</p>

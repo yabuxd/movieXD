@@ -3,10 +3,10 @@ import { useAuth } from '../context/AuthContext'
 import LoadingSpinner from './LoadingSpinner'
 
 export default function ProtectedRoute({ children }) {
-  const { isAuthenticated, loading } = useAuth()
+  const { isAuthenticated, initializing } = useAuth()
   const location = useLocation()
 
-  if (loading) {
+  if (initializing) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-brand-bg">
         <LoadingSpinner />
