@@ -7,7 +7,7 @@ import { withTrailer } from '../utils/media'
  * In development:  Vite proxies /api/tmdb → TMDB via vite.config.js so the
  *                  key stays in .env on the server and never in the browser.
  *
- * In production:   Vercel (api/tmdb/[...path].js) or Netlify
+ * In production:   Vercel (api/tmdb.js) or Netlify
  *                  (netlify/functions/tmdb-proxy.js) injects the key server-side.
  *
  * The VITE_TMDB_API_KEY is intentionally NOT used here anymore.

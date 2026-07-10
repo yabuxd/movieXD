@@ -1,5 +1,6 @@
 {
   "rewrites": [
+    { "source": "/api/tmdb/(.*)", "destination": "/api/tmdb?path=$1" },
     { "source": "/((?!api/).*)", "destination": "/index.html" }
   ],
   "headers": [
