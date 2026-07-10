@@ -4,12 +4,11 @@ import { withTrailer } from '../utils/media'
 /**
  * All TMDB requests go through /api/tmdb/* regardless of environment.
  *
- * In development:  Vite proxies /api/tmdb → tmdb-proxy Netlify function via
- *                  the vite.config.js proxy (see below), so the key stays
- *                  in .env on the server side and is never in the browser bundle.
+ * In development:  Vite proxies /api/tmdb → TMDB via vite.config.js so the
+ *                  key stays in .env on the server and never in the browser.
  *
- * In production:   Netlify routes /api/tmdb/* to the serverless function
- *                  which injects the key server-side.
+ * In production:   Vercel (api/tmdb/[...path].js) or Netlify
+ *                  (netlify/functions/tmdb-proxy.js) injects the key server-side.
  *
  * The VITE_TMDB_API_KEY is intentionally NOT used here anymore.
  */

@@ -47,9 +47,15 @@ MovieXD uses **Firebase Authentication** for email/password sign-up, Google OAut
 
 1. Create a project at [console.firebase.google.com](https://console.firebase.google.com).
 2. Enable **Email/Password** and **Google** under Authentication → Sign-in method.
-3. Add authorized domains: `localhost`, `movyxd.netlify.app`, and your production domain.
+3. Add authorized domains: `localhost`, your `*.vercel.app` domain, and any custom domain.
 4. Copy the web app config into `.env` using the `VITE_FIREBASE_*` variables from `.env.example`.
-5. For Netlify, set the same variables in Site configuration → Environment variables and redeploy.
+5. On **Vercel** → Project → Settings → Environment Variables, set `TMDB_API_KEY` and all `VITE_FIREBASE_*` values, then redeploy.
+
+### Deploy (Vercel)
+
+1. Import the GitHub repo in [vercel.com](https://vercel.com) (framework: Vite, output: `dist`).
+2. Set env vars: `TMDB_API_KEY`, `VITE_FIREBASE_*` (and optionally `VITE_TMDB_API_KEY` for local parity).
+3. Deploy. TMDB calls go through `api/tmdb/[...path].js` so the key stays server-side.
 
 ### Google OAuth
 

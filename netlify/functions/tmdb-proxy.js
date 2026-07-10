@@ -24,6 +24,12 @@ const ALLOWED_PATH_PREFIXES = [
 function getCorsOrigin(request) {
   const origin = request.headers.get('origin') || ''
   if (ALLOWED_ORIGINS.includes(origin)) return origin
+  try {
+    const { hostname, protocol } = new URL(origin)
+    if (protocol === 'https:' && hostname.endsWith('.vercel.app')) return origin
+  } catch {
+    /* ignore */
+  }
   return null
 }
 
