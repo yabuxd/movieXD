@@ -1,9 +1,8 @@
 /**
- * Vercel serverless function: proxies TMDB.
- * Routed via vercel.json rewrite: /api/tmdb/* → /api/tmdb?path=*
- * API key stays server-side in process.env.
+ * Vercel Node serverless function — proxies TMDB.
+ * .cjs so it works with package.json "type": "module".
+ * Rewritten from /api/tmdb/* via vercel.json
  */
-
 const ALLOWED_ORIGINS = [
   'http://localhost:5173',
   'http://localhost:4173',
@@ -49,7 +48,7 @@ function corsOrigin(req) {
   return null
 }
 
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
   const origin = corsOrigin(req)
 
   if (req.method === 'OPTIONS') {
@@ -69,7 +68,7 @@ export default async function handler(req, res) {
 
   const isAllowed = ALLOWED_PATH_PREFIXES.some((prefix) => tmdbPath.startsWith(prefix))
   if (!rawPath || tmdbPath === '/' || !isAllowed) {
-    return res.status(400).json({ error: 'Invalid or disallowed TMDB path' })
+    return res.status(400).json({ error: 'Invalid or disallowed TMDB path', path: tmdbPath })
   }
 
   const apiKey = process.env.TMDB_API_KEY || process.env.VITE_TMDB_API_KEY

@@ -1,7 +1,21 @@
 {
-  "rewrites": [
-    { "source": "/api/tmdb/(.*)", "destination": "/api/tmdb?path=$1" },
-    { "source": "/((?!api/).*)", "destination": "/index.html" }
+  "version": 2,
+  "builds": [
+    {
+      "src": "package.json",
+      "use": "@vercel/static-build",
+      "config": { "distDir": "dist" }
+    },
+    {
+      "src": "api/tmdb.cjs",
+      "use": "@vercel/node"
+    }
+  ],
+  "routes": [
+    { "src": "/api/tmdb/(.*)", "dest": "/api/tmdb.cjs?path=$1" },
+    { "src": "/api/tmdb", "dest": "/api/tmdb.cjs" },
+    { "handle": "filesystem" },
+    { "src": "/(.*)", "dest": "/index.html" }
   ],
   "headers": [
     {
