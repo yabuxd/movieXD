@@ -17,6 +17,10 @@ export const isConfigured = Boolean(
     firebaseConfig.appId
 )
 
+// #region agent log
+fetch('http://127.0.0.1:7413/ingest/a3696a9f-9e8c-4e33-8045-80214d6aad95',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'7cb7ff'},body:JSON.stringify({sessionId:'7cb7ff',runId:'pre-fix',hypothesisId:'A,F',location:'firebase.js:init',message:'Firebase config presence check',data:{isConfigured,hasApiKey:Boolean(firebaseConfig.apiKey),apiKeyLen:firebaseConfig.apiKey?.length??0,apiKeyPrefix:firebaseConfig.apiKey?.slice(0,8)??null,authDomain:firebaseConfig.authDomain??null,projectId:firebaseConfig.projectId??null,hasStorageBucket:Boolean(firebaseConfig.storageBucket),hasMessagingSenderId:Boolean(firebaseConfig.messagingSenderId),hasAppId:Boolean(firebaseConfig.appId),appIdSuffix:firebaseConfig.appId?.slice(-8)??null,origin:typeof window!=='undefined'?window.location.origin:null,hostname:typeof window!=='undefined'?window.location.hostname:null},timestamp:Date.now()})}).catch(()=>{});
+// #endregion
+
 let app = null
 let auth = null
 let googleProvider = null

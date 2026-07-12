@@ -51,11 +51,21 @@ export function AuthProvider({ children }) {
     setLoading(true)
     setError(null)
 
+    // #region agent log
+    fetch('http://127.0.0.1:7413/ingest/a3696a9f-9e8c-4e33-8045-80214d6aad95',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'7cb7ff'},body:JSON.stringify({sessionId:'7cb7ff',runId:'pre-fix',hypothesisId:'C',location:'AuthContext.jsx:login',message:'signIn payload types',data:{emailType:typeof email,passwordType:typeof password,emailLen:typeof email==='string'?email.trim().length:null,passwordLen:typeof password==='string'?password.length:null,passwordIsNull:password===null,passwordIsUndefined:password===undefined,authReady:Boolean(auth)},timestamp:Date.now()})}).catch(()=>{});
+    // #endregion
+
     try {
       const { user } = await signInWithEmailAndPassword(auth, email.trim(), password)
+      // #region agent log
+      fetch('http://127.0.0.1:7413/ingest/a3696a9f-9e8c-4e33-8045-80214d6aad95',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'7cb7ff'},body:JSON.stringify({sessionId:'7cb7ff',runId:'pre-fix',hypothesisId:'C',location:'AuthContext.jsx:login:success',message:'signIn succeeded',data:{uid:user?.uid??null},timestamp:Date.now()})}).catch(()=>{});
+      // #endregion
       syncUser(user)
       return { success: true }
     } catch (err) {
+      // #region agent log
+      fetch('http://127.0.0.1:7413/ingest/a3696a9f-9e8c-4e33-8045-80214d6aad95',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'7cb7ff'},body:JSON.stringify({sessionId:'7cb7ff',runId:'pre-fix',hypothesisId:'B,E',location:'AuthContext.jsx:login:catch',message:'signIn raw error',data:{code:err?.code??null,message:err?.message??null,name:err?.name??null,customData:err?.customData??null,mapped:mapAuthError(err)},timestamp:Date.now()})}).catch(()=>{});
+      // #endregion
       setError(mapAuthError(err))
       return { success: false }
     } finally {
@@ -68,12 +78,22 @@ export function AuthProvider({ children }) {
     setLoading(true)
     setError(null)
 
+    // #region agent log
+    fetch('http://127.0.0.1:7413/ingest/a3696a9f-9e8c-4e33-8045-80214d6aad95',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'7cb7ff'},body:JSON.stringify({sessionId:'7cb7ff',runId:'pre-fix',hypothesisId:'C',location:'AuthContext.jsx:register',message:'signUp payload types',data:{nameType:typeof name,emailType:typeof email,passwordType:typeof password,nameLen:typeof name==='string'?name.trim().length:null,emailLen:typeof email==='string'?email.trim().length:null,passwordLen:typeof password==='string'?password.length:null,passwordIsNull:password===null,passwordIsUndefined:password===undefined,authReady:Boolean(auth)},timestamp:Date.now()})}).catch(()=>{});
+    // #endregion
+
     try {
       const { user } = await createUserWithEmailAndPassword(auth, email.trim(), password)
+      // #region agent log
+      fetch('http://127.0.0.1:7413/ingest/a3696a9f-9e8c-4e33-8045-80214d6aad95',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'7cb7ff'},body:JSON.stringify({sessionId:'7cb7ff',runId:'pre-fix',hypothesisId:'C',location:'AuthContext.jsx:register:createSuccess',message:'createUser succeeded, updating profile',data:{uid:user?.uid??null},timestamp:Date.now()})}).catch(()=>{});
+      // #endregion
       await updateProfile(user, { displayName: name.trim() })
       syncUser(user)
       return { success: true }
     } catch (err) {
+      // #region agent log
+      fetch('http://127.0.0.1:7413/ingest/a3696a9f-9e8c-4e33-8045-80214d6aad95',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'7cb7ff'},body:JSON.stringify({sessionId:'7cb7ff',runId:'pre-fix',hypothesisId:'B,E',location:'AuthContext.jsx:register:catch',message:'signUp raw error',data:{code:err?.code??null,message:err?.message??null,name:err?.name??null,customData:err?.customData??null,mapped:mapAuthError(err)},timestamp:Date.now()})}).catch(()=>{});
+      // #endregion
       setError(mapAuthError(err))
       return { success: false }
     } finally {

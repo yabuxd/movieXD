@@ -42,6 +42,12 @@ export function mapAuthError(error) {
   const msg = message || 'Something went wrong. Please try again.'
   const lower = msg.toLowerCase()
 
+  // #region agent log
+  if (typeof fetch !== 'undefined') {
+    fetch('http://127.0.0.1:7413/ingest/a3696a9f-9e8c-4e33-8045-80214d6aad95',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'7cb7ff'},body:JSON.stringify({sessionId:'7cb7ff',runId:'pre-fix',hypothesisId:'E',location:'authValidation.js:mapAuthError',message:'mapAuthError input',data:{code,message:typeof message==='string'?message:null,willMapCredential:['auth/invalid-credential','auth/wrong-password','auth/user-not-found','auth/invalid-login-credentials'].includes(code)||lower.includes('invalid login credentials')||lower.includes('invalid credentials')},timestamp:Date.now()})}).catch(()=>{});
+  }
+  // #endregion
+
   if (
     code === 'auth/invalid-credential' ||
     code === 'auth/wrong-password' ||
