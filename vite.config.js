@@ -9,6 +9,15 @@ export default defineConfig(({ mode }) => {
   return {
     plugins: [react()],
 
+    // On Vercel, either TMDB_API_KEY or VITE_TMDB_API_KEY must be set at build time
+    // so the client can call TMDB directly (Vite static hosting has no /api runtime).
+    define:
+      mode === 'production' && tmdbKey && !env.VITE_TMDB_API_KEY
+        ? {
+            'import.meta.env.VITE_TMDB_API_KEY': JSON.stringify(tmdbKey),
+          }
+        : undefined,
+
     build: {
       chunkSizeWarningLimit: 1000,
     },

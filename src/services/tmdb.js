@@ -2,19 +2,19 @@ import axios from 'axios'
 import { withTrailer } from '../utils/media'
 
 /**
- * All TMDB requests go through /api/tmdb/* regardless of environment.
- *
- * In development:  Vite proxies /api/tmdb → TMDB via vite.config.js so the
- *                  key stays in .env on the server and never in the browser.
- *
- * In production:   Vercel (api/tmdb.js) or Netlify
- *                  (netlify/functions/tmdb-proxy.js) injects the key server-side.
- *
- * The VITE_TMDB_API_KEY is intentionally NOT used here anymore.
+ * Development: Vite proxies /api/tmdb → TMDB (key stays on the dev server).
+ * Production (Vercel static): call TMDB directly with VITE_TMDB_API_KEY
+ * baked in at build time (set TMDB_API_KEY or VITE_TMDB_API_KEY in Vercel).
+ * Netlify can still use /api/tmdb via the serverless function when no key is
+ * present in the client bundle.
  */
+const apiKey = import.meta.env.VITE_TMDB_API_KEY || ''
+const useDirectTmdb = import.meta.env.PROD && Boolean(apiKey)
+
 const tmdbApi = axios.create({
-  baseURL: '/api/tmdb',
+  baseURL: useDirectTmdb ? 'https://api.themoviedb.org/3' : '/api/tmdb',
   timeout: 15000,
+  ...(useDirectTmdb ? { params: { api_key: apiKey } } : {}),
 })
 
 // Simple in-memory cache to ensure fast retrieval
